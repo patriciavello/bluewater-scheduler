@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { adminApi, Reservation } from "../api";
+import { adminApi } from "../api";
+import type { Reservation } from "../api";
 import ReservationForm from "../components/ReservationForm";
 
 function toYmd(d: Date) {

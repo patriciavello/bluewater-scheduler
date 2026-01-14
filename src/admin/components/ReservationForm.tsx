@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { adminApi, Reservation } from "../api";
+import { adminApi } from "../api";
+import type { Reservation } from "../api";
+
 
 function toLocalInput(iso: string) {
   // ISO -> yyyy-mm-ddThh:mm for datetime-local
@@ -31,16 +33,16 @@ export default function ReservationForm({
   const now = useMemo(() => new Date(), []);
   const plus2h = useMemo(() => new Date(now.getTime() + 2 * 60 * 60 * 1000), [now]);
 
-  const [boatId, setBoatId] = useState<string>(String(initial?.boat_id ?? ""));
+  const [boatId, setBoatId] = useState<string>(String(initial?.boatId ?? ""));
   const [startLocal, setStartLocal] = useState<string>(
-    initial?.start_time ? toLocalInput(initial.start_time) : toLocalInput(now.toISOString())
+    initial?.startDate ? toLocalInput(initial.startDate) : toLocalInput(now.toISOString())
   );
   const [endLocal, setEndLocal] = useState<string>(
-    initial?.end_time ? toLocalInput(initial.end_time) : toLocalInput(plus2h.toISOString())
+    initial?.endExclusive ? toLocalInput(initial.endExclusive) : toLocalInput(plus2h.toISOString())
   );
 
-  const [customerName, setCustomerName] = useState(initial?.customer_name ?? "");
-  const [customerEmail, setCustomerEmail] = useState(initial?.customer_email ?? "");
+  const [customerName, setCustomerName] = useState(initial?.requesterName ?? "");
+  const [customerEmail, setCustomerEmail] = useState(initial?.requesterEmail ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
 
   const [saving, setSaving] = useState(false);
