@@ -240,17 +240,13 @@ export default function UserAccount() {
         method: "PATCH",
         body: JSON.stringify({ start_date, end_exclusive }),
       });
-
+  
       if (!res.ok || !data.ok) throw new Error(data.error || "Update failed");
-
-      setResvs((prev) =>
-        prev.map((r) =>
-          r.id === id
-            ? { ...r, start_date: data.reservation.start_date, end_exclusive: data.reservation.end_exclusive }
-            : r
-        )
-      );
+  
       setMsg("Updated ✅");
+  
+      // ✅ Refetch the list so UI always matches backend
+      await loadMyReservations();
     } catch (e: any) {
       setMsg(e?.message || "Update failed");
     } finally {
@@ -454,13 +450,49 @@ function ReservationCard({
   const canEdit = status === "PENDING";
   const canCancel = status === "PENDING";
 
+  // initial dates
   const [startDate, setStartDate] = useState(r.start_date);
-  const [endExclusive, setEndExclusive] = useState(r.end_exclusive);
+
+  // compute initial duration from stored exclusive date
+  const initialDuration = (() => {
+    if (!r.start_date || !r.end_exclusive) return 1;
+    const s = new Date(r.start_date + "T00:00:00");
+    const e = new Date(r.end_exclusive + "T00:00:00");
+    const diff = Math.round((e.getTime() - s.getTime()) / 86400000);
+    return diff > 0 ? diff : 1;
+  })();
+
+  const [durationDays, setDurationDays] = useState(initialDuration);
 
   useEffect(() => {
     setStartDate(r.start_date);
-    setEndExclusive(r.end_exclusive);
+
+    if (r.start_date && r.end_exclusive) {
+      const s = new Date(r.start_date + "T00:00:00");
+      const e = new Date(r.end_exclusive + "T00:00:00");
+      const diff = Math.round((e.getTime() - s.getTime()) / 86400000);
+      setDurationDays(diff > 0 ? diff : 1);
+    }
   }, [r.start_date, r.end_exclusive]);
+
+  // compute inclusive end date for display
+  let endInclusive = "";
+  if (startDate && durationDays) {
+    const d = new Date(startDate + "T00:00:00");
+    d.setDate(d.getDate() + Number(durationDays) - 1);
+    endInclusive = d.toISOString().slice(0, 10);
+  }
+
+  // When user clicks save, convert duration → exclusive end date
+  function handleSave() {
+    if (!startDate || !durationDays) return;
+
+    const d = new Date(startDate + "T00:00:00");
+    d.setDate(d.getDate() + Number(durationDays));
+    const endExclusive = d.toISOString().slice(0, 10);
+
+    onEdit(startDate, endExclusive);
+  }
 
   return (
     <div style={styles.resCard}>
@@ -477,7 +509,7 @@ function ReservationCard({
       </div>
 
       <div style={{ opacity: 0.75, fontSize: 13, marginTop: 6 }}>
-      Dates: <b>{r.start_date}</b> → <b>{r.end_exclusive}</b>
+        Current reservation: <b>{r.start_date}</b> → <b>{endInclusive}</b>
       </div>
 
       <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -493,30 +525,40 @@ function ReservationCard({
         </label>
 
         <label style={styles.label}>
-          <span>End date (exclusive)</span>
+          <span>Duration (days)</span>
           <input
             style={styles.input}
-            type="date"
-            value={endExclusive}
-            onChange={(e) => setEndExclusive(e.target.value)}
+            type="number"
+            min={1}
+            max={60}
+            value={durationDays}
+            onChange={(e) => setDurationDays(Number(e.target.value))}
             disabled={!canEdit}
           />
         </label>
       </div>
 
-      <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button style={styles.btn} onClick={() => onEdit(startDate, endExclusive)} disabled={!canEdit}>
-          Change my reservation
-        </button>
-        <button style={styles.btn} onClick={onCancel} disabled={!canCancel}>
-          Cancel reservation (fee may apply)
-        </button>
+      <div style={{ marginTop: 6, fontSize: 12, opacity: 0.7 }}>
+        After approved, if need to cancel or reschedule, call the office, fee may apply - until: <b>{(startDate) || "—"}</b>
       </div>
+
+      {status === "PENDING" && (
+        <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button style={styles.btn} onClick={handleSave}>
+            Change my reservation
+          </button>
+          <button style={styles.btn} onClick={onCancel}>
+            Cancel reservation
+          </button>
+        </div>
+      )}
+
 
       {r.notes ? <div style={{ marginTop: 8, opacity: 0.75, fontSize: 13 }}>Notes: {r.notes}</div> : null}
     </div>
   );
 }
+
 
 const styles: Record<string, React.CSSProperties> = {
   page: { maxWidth: 1000, margin: "0 auto", padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial" },
