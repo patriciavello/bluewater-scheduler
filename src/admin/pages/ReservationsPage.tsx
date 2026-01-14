@@ -41,7 +41,7 @@ export default function ReservationsPage() {
       if (status !== "all") params.set("status", status);
       if (q.trim()) params.set("q", q.trim());
 
-      const data = await adminApi.listReservations(params);
+      const data = await adminApi.listReservations(params.toString());
       setItems(data.reservations || []);
     } catch (e: any) {
       setError(e.message || "Failed to load reservations");
@@ -184,3 +184,5 @@ const thRight: React.CSSProperties = { ...th, textAlign: "right" };
 const td: React.CSSProperties = { padding: 8, borderBottom: "1px solid #eee" };
 const tdRight: React.CSSProperties = { ...td, textAlign: "right", whiteSpace: "nowrap" };
 const tdMono: React.CSSProperties = { ...td, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" };
+
+

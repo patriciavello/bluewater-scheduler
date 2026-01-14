@@ -37,17 +37,6 @@ async function safeJson(res: Response) {
   }
 }
 
-function cookieFetch(path: string, init: RequestInit = {}) {
-  return fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init.headers || {}),
-    },
-  });
-}
-
 
 async function apiFetch(path: string, init: RequestInit = {}) {
   // IMPORTANT: credentials include so browser sends/receives HttpOnly cookie `session`
@@ -448,7 +437,7 @@ function ReservationCard({
 }) {
   const status = String(r.status).toUpperCase();
   const canEdit = status === "PENDING";
-  const canCancel = status === "PENDING";
+ 
 
   // initial dates
   const [startDate, setStartDate] = useState(r.start_date);

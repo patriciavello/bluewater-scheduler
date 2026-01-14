@@ -17,21 +17,20 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 
-
+export type ReservationStatus = "PENDING" | "APPROVED" | "DENIED" | "CANCELLED" | "BLOCKED";
 
 export type Reservation = {
   id: string;
   boatId: string;
-  boatName: string;
-
-  startDate: string; // ISO string
-  endExclusive: string;   // ISO string
-
-  requesterName: string;
-  requesterEmail: string;
-
-  status: "PENDING" | "APPROVED" | "DENIED" | "CANCELLED";
+  boatName?: string;
+  startDate: string;       // "YYYY-MM-DD" or ISO
+  endExclusive: string;    // "YYYY-MM-DD" or ISO
+  status: ReservationStatus;
+  requesterName?: string | null;
+  requesterEmail?: string | null;
+  notes?: string | null;   // ✅ add this
 };
+
 
 export const adminApi = {
   listReservations: (start: string, days = 14) =>

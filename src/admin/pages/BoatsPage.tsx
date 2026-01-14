@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api";
+import { adminApi } from "../api";
 import BoatForm from "../components/BoatForm";
 
 export default function BoatsPage() {
