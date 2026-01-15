@@ -80,11 +80,11 @@ export default function ReservationForm({
     setSaving(true);
     try {
       const payload = {
-        boat_id: Number.isNaN(Number(boatId)) ? boatId : Number(boatId),
-        start_time: startIso,
-        end_time: endIso,
-        customer_name: customerName.trim() || null,
-        customer_email: customerEmail.trim() || null,
+        boatId: String(boatId).trim(),
+        startDate: startIso,
+        endExclusive: endIso,
+        requesterName: customerName.trim() || null,
+        requesterEmail: customerEmail.trim() || null,
         notes: notes.trim() || null,
       };
 

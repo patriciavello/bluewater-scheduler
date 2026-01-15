@@ -17,6 +17,8 @@ function fmt(dtIso: string) {
   return d.toLocaleString();
 }
 
+
+
 export default function ReservationsPage() {
   const today = useMemo(() => new Date(), []);
   const [from, setFrom] = useState(toYmd(new Date(today.getFullYear(), today.getMonth(), today.getDate())));
@@ -63,6 +65,17 @@ export default function ReservationsPage() {
       alert(e.message || "Failed to cancel");
     }
   }
+
+  async function approve(id: string) {
+    await adminApi.approveReservation(id);
+    await load(); // or whatever function reloads the list
+  }
+  
+  async function deny(id: string) {
+    await adminApi.denyReservation(id);
+    await load();
+  }
+  
 
   return (
     <div>
@@ -149,7 +162,7 @@ export default function ReservationsPage() {
                   </td>
                   <td style={tdRight}>
                     <button onClick={() => setEditing(r)}>Edit</button>{" "}
-                    <button onClick={() => onCancel(r)} disabled={(r.status === "cancelled")}>
+                    <button onClick={() => onCancel(r)} disabled={(r.status === "CANCELLED")}>
                       Cancel
                     </button>
                     <button onClick={() => approve(r.id)}>Approve</button>

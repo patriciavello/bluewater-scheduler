@@ -13,7 +13,7 @@ export default function BoatsPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await api.listBoats();
+      const data = await adminApi.listBoats();
       setBoats(data.boats || []);
     } catch (e: any) {
       setError(e.message || "Failed to load boats");
@@ -27,7 +27,7 @@ export default function BoatsPage() {
   async function onDelete(id: any) {
     if (!confirm("Delete this boat?")) return;
     try {
-      await api.deleteBoat(id);
+      await adminApi.deleteBoat(id);
       await refresh();
     } catch (e: any) {
       alert(e.message);
@@ -75,8 +75,8 @@ export default function BoatsPage() {
           initial={editing}
           onClose={() => { setCreating(false); setEditing(null); }}
           onSave={async (payload) => {
-            if (editing) await api.updateBoat(editing.id, payload);
-            else await api.createBoat(payload);
+            if (editing) await adminApi.updateBoat(editing.id, payload);
+            else await adminApi.createBoat(payload);
             setCreating(false); setEditing(null);
             await refresh();
           }}
