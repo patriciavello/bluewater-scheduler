@@ -5,14 +5,7 @@ async function parseJson(res: Response) {
   try { return text ? JSON.parse(text) : {}; } catch { return { raw: text }; }
 }
 
-async function json<T>(res: Response): Promise<T> {
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!res.ok || (data && data.ok === false)) {
-    throw new Error((data && data.error) || `HTTP ${res.status}`);
-  }
-  return data as T;
-}
+
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
