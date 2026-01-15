@@ -5,6 +5,15 @@ async function parseJson(res: Response) {
   try { return text ? JSON.parse(text) : {}; } catch { return { raw: text }; }
 }
 
+async function json<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!res.ok || (data && data.ok === false)) {
+    throw new Error((data && data.error) || `HTTP ${res.status}`);
+  }
+  return data as T;
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
   const data = await parseJson(res);
@@ -29,6 +38,15 @@ export type Reservation = {
   requesterName?: string | null;
   requesterEmail?: string | null;
   notes?: string | null;   // ✅ add this
+};
+export type Boat = {
+  id: string;
+  name: string;
+  type?: string | null;
+  location?: string | null;
+  capacity?: number | null;
+  numberOfBeds?: number | null;
+  imageUrl?: string | null;
 };
 
 
@@ -61,4 +79,27 @@ export const adminApi = {
 
   cancelReservation: (id: Reservation["id"]) =>
     request(`${API_BASE}/api/admin/reservations/${id}/cancel`, { method: "POST" }),
-};
+
+
+  // ✅ NEW: Boats
+  
+  listBoats: () =>
+    request(`${API_BASE}/api/admin/boats`),
+
+  createBoat: (payload: any) =>
+    request(`${API_BASE}/api/admin/boats`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  updateBoat: (id: string, payload: any) =>
+    request(`${API_BASE}/api/admin/boats/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+
+  deleteBoat: (id: string) =>
+    request(`${API_BASE}/api/admin/boats/${id}`, {
+      method: "DELETE",
+    }),
+  };
