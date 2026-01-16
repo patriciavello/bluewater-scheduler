@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import SchedulerApp from "./SchedulerApp";
-import Admin from "./Admin";
+import AdminRouter from "./admin/AdminRouter";
+import AdminLayout from "./admin/AdminLayout";
 import UserAccount from "./UserAccount";
 
 export default function App() {
@@ -8,7 +9,9 @@ export default function App() {
     <Routes>
       <Route path="/" element={<SchedulerApp />} />
       <Route path="/account" element={<UserAccount />} />
-      <Route path="/admin/*" element={<Admin />} />
+      <Route path="/admin" element={<AdminLayout />}>
+       <Route path="*" element={<AdminRouter />} />
+      </Route>
 
       {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

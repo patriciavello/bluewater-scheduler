@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { adminApi } from "../api";
 import BoatForm from "../components/BoatForm";
 
+console.log("BoatsPage adminApi:", adminApi);
+
 export default function BoatsPage() {
   const [boats, setBoats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

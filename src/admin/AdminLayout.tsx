@@ -1,32 +1,71 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 
 export default function AdminLayout() {
-  const { pathname } = useLocation();
-
-  const linkStyle = (active: boolean) => ({
-    display: "block",
-    padding: "10px 12px",
-    borderRadius: 10,
-    textDecoration: "none",
-    border: "1px solid #ddd",
-    background: active ? "#f3f3f3" : "white",
-    color: "black",
-  });
-
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", minHeight: "100vh" }}>
-      <aside style={{ padding: 16, borderRight: "1px solid #ddd" }}>
-        <h2 style={{ marginTop: 0 }}>Admin</h2>
-        <div style={{ display: "grid", gap: 8 }}>
-          <Link to="/admin/boats" style={linkStyle(pathname.startsWith("/admin/boats"))}>Boats</Link>
-          <Link to="/admin/reservations" style={linkStyle(pathname.startsWith("/admin/reservations"))}>Reservations</Link>
-          <Link to="/" style={linkStyle(false)}>← Back to Scheduler</Link>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      
+      {/* Top Navigation Bar */}
+      <header
+        style={{
+          background: "#0f172a",
+          color: "white",
+          padding: "12px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Brand */}
+        <div style={{ fontWeight: 900, fontSize: 18 }}>
+          Bluewater Admin
         </div>
-      </aside>
 
-      <main style={{ padding: 20 }}>
+        {/* Navigation */}
+        <nav style={{ display: "flex", gap: 12 }}>
+          <NavLink
+            to="/admin/reservations"
+            style={({ isActive }) => ({
+              ...navLinkBase,
+              ...(isActive ? navLinkActive : {}),
+            })}
+          >
+            Reservations
+          </NavLink>
+
+          <NavLink
+            to="/admin/boats"
+            style={({ isActive }) => ({
+              ...navLinkBase,
+              ...(isActive ? navLinkActive : {}),
+            })}
+          >
+            Boats
+          </NavLink>
+        </nav>
+
+        {/* Exit */}
+        <NavLink to="/" style={navLinkBase}>
+          Exit
+        </NavLink>
+      </header>
+
+      {/* Content */}
+      <main style={{ flex: 1, padding: 20, background: "#f8fafc" }}>
         <Outlet />
       </main>
     </div>
   );
 }
+
+const navLinkBase: React.CSSProperties = {
+  color: "white",
+  textDecoration: "none",
+  fontWeight: 600,
+  padding: "6px 12px",
+  borderRadius: 8,
+  transition: "background 0.2s",
+};
+
+const navLinkActive: React.CSSProperties = {
+  background: "#2563eb", // nice blue highlight
+};
