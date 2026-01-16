@@ -91,8 +91,8 @@ export default function BoatForm({
       type: type.trim() || null,
       location: location.trim() || null,
       capacity: normalizeNumber(capacity),
-      numberOfBeds: normalizeNumber(beds),
-      imageUrl: imageUrl.trim() || null,
+      number_of_beds: normalizeNumber(beds),
+      image_url: imageUrl.trim() || null,
     };
 
     // Remove nulls to keep PATCH clean (optional)
