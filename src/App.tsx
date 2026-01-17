@@ -3,6 +3,9 @@ import SchedulerApp from "./SchedulerApp";
 import AdminRouter from "./admin/AdminRouter";
 import AdminLayout from "./admin/AdminLayout";
 import UserAccount from "./UserAccount";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
+
 
 export default function App() {
   return (
