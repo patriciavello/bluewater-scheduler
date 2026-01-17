@@ -437,9 +437,11 @@ export default function UserAccount() {
         <button style={styles.btn} onClick={() => setTab("profile")} disabled={tab === "profile"}>
           Profile
         </button>
+
         <button style={styles.btn} onClick={() => setTab("password")} disabled={tab === "password"}>
           Password
         </button>
+
         <button
           style={styles.btn}
           onClick={async () => {
@@ -448,9 +450,17 @@ export default function UserAccount() {
           }}
           disabled={tab === "reservations"}
         >
-          Reservations
+          My reservations
         </button>
+
+        {/* New reservation → go to schedule */}
+        <a href="/" style={{ textDecoration: "none" }}>
+          <button style={styles.primary}>
+            + New reservation
+          </button>
+        </a>
       </div>
+
 
       {msg ? <div style={{ ...styles.msg, marginTop: 12 }}>{msg}</div> : null}
 
@@ -688,4 +698,3 @@ const styles: Record<string, React.CSSProperties> = {
   grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 },
   resCard: { border: "1px solid #e5e7eb", borderRadius: 14, padding: 14, background: "white" },
 };
-
