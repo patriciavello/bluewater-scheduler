@@ -60,6 +60,15 @@ export default function UserAccount() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
+  // toggle: login vs create account
+  const [mode, setMode] = useState<"login" | "register">("login");
+
+  // register form
+  const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  
+  
   const [me, setMe] = useState<Me | null>(null);
   const [resvs, setResvs] = useState<MyReservation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -112,6 +121,34 @@ export default function UserAccount() {
       setLoading(false);
     }
   }
+
+  async function register(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setMsg("");
+
+    try {
+      const { res, data } = await apiFetch("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          email: regEmail,
+          phone: regPhone,
+          password: regPassword,
+        }),
+      });
+
+      if (!res.ok || !data.ok) throw new Error(data.error || "Registration failed");
+
+      // Backend sets HttpOnly cookie (session). No token needed.
+      setRegPassword("");
+      await loadMe(); // ✅ auto-login into account view
+    } catch (e: any) {
+      setMsg(e?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   async function logout() {
     setLoading(true);
@@ -255,37 +292,128 @@ export default function UserAccount() {
       <div style={styles.page}>
         <h2 style={{ margin: 0 }}>My Account</h2>
         <div style={{ opacity: 0.7, marginTop: 4 }}>
-          Sign in to manage your profile and reservations.
+          {mode === "login"
+            ? "Sign in to manage your profile and reservations."
+            : "Create your account to request and manage reservations."}
         </div>
 
-        <form
-          onSubmit={login}
-          style={{ ...styles.card, display: "grid", gap: 10, maxWidth: 420, marginTop: 14 }}
-        >
-          <label style={styles.label}>
-            <span>Email</span>
-            <input style={styles.input} value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
-          </label>
-
-          <label style={styles.label}>
-            <span>Password</span>
-            <input
-              style={styles.input}
-              type="password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-            />
-          </label>
-
-          {msg ? <div style={styles.msg}>{msg}</div> : null}
-
-          <button style={styles.primary} disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
+        {/* Toggle */}
+        <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            style={styles.btn}
+            onClick={() => {
+              setMode("login");
+              setMsg("");
+            }}
+            disabled={mode === "login"}
+          >
+            Sign in
           </button>
-        </form>
+
+          <button
+            type="button"
+            style={styles.btn}
+            onClick={() => {
+              setMode("register");
+              setMsg("");
+            }}
+            disabled={mode === "register"}
+          >
+            Create account
+          </button>
+        </div>
+
+        {/* Login form */}
+        {mode === "login" ? (
+          <form
+            onSubmit={login}
+            style={{ ...styles.card, display: "grid", gap: 10, maxWidth: 420, marginTop: 14 }}
+          >
+            <label style={styles.label}>
+              <span>Email</span>
+              <input
+                style={styles.input}
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                type="email"
+                required
+              />
+            </label>
+
+            <label style={styles.label}>
+              <span>Password</span>
+              <input
+                style={styles.input}
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+              />
+            </label>
+
+            {msg ? <div style={styles.msg}>{msg}</div> : null}
+
+            <button style={styles.primary} disabled={loading}>
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+
+            {/* optional: link to forgot password page you’ll add */}
+            <div style={{ marginTop: 6, fontSize: 13, opacity: 0.75 }}>
+              <a href="/forgot-password">Forgot password?</a>
+            </div>
+          </form>
+        ) : (
+          /* Register form */
+          <form
+            onSubmit={register}
+            style={{ ...styles.card, display: "grid", gap: 10, maxWidth: 420, marginTop: 14 }}
+          >
+            <label style={styles.label}>
+              <span>Email</span>
+              <input
+                style={styles.input}
+                value={regEmail}
+                onChange={(e) => setRegEmail(e.target.value)}
+                type="email"
+                required
+              />
+            </label>
+
+            <label style={styles.label}>
+              <span>Phone</span>
+              <input
+                style={styles.input}
+                value={regPhone}
+                onChange={(e) => setRegPhone(e.target.value)}
+                placeholder="(555) 555-5555"
+                required
+              />
+            </label>
+
+            <label style={styles.label}>
+              <span>Password (min 8 chars)</span>
+              <input
+                style={styles.input}
+                type="password"
+                value={regPassword}
+                onChange={(e) => setRegPassword(e.target.value)}
+                minLength={8}
+                required
+              />
+            </label>
+
+            {msg ? <div style={styles.msg}>{msg}</div> : null}
+
+            <button style={styles.primary} disabled={loading}>
+              {loading ? "Creating…" : "Create account"}
+            </button>
+          </form>
+        )}
       </div>
     );
   }
+
 
   return (
     <div style={styles.page}>

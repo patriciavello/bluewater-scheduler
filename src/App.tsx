@@ -9,6 +9,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<SchedulerApp />} />
       <Route path="/account" element={<UserAccount />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/admin" element={<AdminLayout />}>
        <Route path="*" element={<AdminRouter />} />
       </Route>
