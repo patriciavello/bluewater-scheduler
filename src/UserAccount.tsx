@@ -574,16 +574,30 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 
 function ReservationCard({
   r,
+  viewerId,
   onCancel,
   onEdit,
 }: {
   r: MyReservation;
+  viewerId: string;
   onCancel: () => void;
   onEdit: (start_date: string, end_exclusive: string) => void;
 }) {
   const status = String(r.status).toUpperCase();
-  const canEdit = status === "PENDING";
- 
+
+  const isCaptainView =
+    !!r.captain_id &&
+    r.captain_id === viewerId &&
+    !!r.user_id &&
+    r.user_id !== viewerId;
+
+  // Captains should not edit/cancel client reservations here
+  const canEdit = status === "PENDING" && !isCaptainView;
+
+  const clientDisplay =
+    (`${r.client_first_name || ""} ${r.client_last_name || ""}`.trim()) ||
+    r.client_email ||
+    "";
 
   // initial dates
   const [startDate, setStartDate] = useState(r.start_date);
@@ -637,7 +651,16 @@ function ReservationCard({
           <div style={{ opacity: 0.75, fontSize: 13 }}>
             Status: <b>{status}</b>
           </div>
+
+          {/* ✅ Only show client info to captains */}
+          {isCaptainView && clientDisplay ? (
+            <div style={{ marginTop: 6, fontSize: 13, opacity: 0.85 }}>
+              Client: <b>{clientDisplay}</b>
+              {r.client_email ? <span style={{ opacity: 0.7 }}> · {r.client_email}</span> : null}
+            </div>
+          ) : null}
         </div>
+
         <div style={{ opacity: 0.5, fontSize: 12, fontFamily: "ui-monospace, Menlo, Monaco, Consolas, monospace" }}>
           {r.id}
         </div>
@@ -672,26 +695,16 @@ function ReservationCard({
           />
         </label>
       </div>
-      const viewerId = me?.id; // we’ll pass me down (see next snippet)
-      const isCaptainView = !!r.captain_id && r.captain_id === viewerId && r.user_id !== viewerId;
-
-      const clientName =
-        `${r.client_first_name || ""} ${r.client_last_name || ""}`.trim() || r.client_email || "";
-        {(r.client_email || r.client_first_name || r.client_last_name) ? (
-          <div style={{ opacity: 0.75, fontSize: 13, marginTop: 4 }}>
-            Client:{" "}
-            <b>
-              {(`${r.client_first_name || ""} ${r.client_last_name || ""}`.trim()) || r.client_email}
-            </b>
-            {r.client_email ? <span style={{ opacity: 0.7 }}> · {r.client_email}</span> : null}
-          </div>
-        ) : null}
 
       <div style={{ marginTop: 6, fontSize: 12, opacity: 0.7 }}>
-        After approved, if need to cancel or reschedule, call the office, fee may apply - until: <b>{(startDate) || "—"}</b>
+        {isCaptainView
+          ? "To reschedule or cancel, please contact the office. Fees may apply."
+          : "After approved, if need to cancel or reschedule, call the office, fee may apply."}
+        {" "}
+        Until: <b>{startDate || "—"}</b>
       </div>
 
-      {status === "PENDING" && (
+      {status === "PENDING" && !isCaptainView ? (
         <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button style={styles.btn} onClick={handleSave}>
             Change my reservation
@@ -700,13 +713,13 @@ function ReservationCard({
             Cancel reservation
           </button>
         </div>
-      )}
-
+      ) : null}
 
       {r.notes ? <div style={{ marginTop: 8, opacity: 0.75, fontSize: 13 }}>Notes: {r.notes}</div> : null}
     </div>
   );
 }
+
 
 
 const styles: Record<string, React.CSSProperties> = {
