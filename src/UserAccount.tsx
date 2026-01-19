@@ -26,7 +26,15 @@ type MyReservation = {
   end_exclusive: string; // YYYY-MM-DD
   status: string;
   notes?: string | null;
+
+  user_id?: string;
+  captain_id?: string | null;
+
+  client_email?: string | null;
+  client_first_name?: string | null;
+  client_last_name?: string | null;
 };
+
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -664,6 +672,20 @@ function ReservationCard({
           />
         </label>
       </div>
+      const viewerId = me?.id; // we’ll pass me down (see next snippet)
+      const isCaptainView = !!r.captain_id && r.captain_id === viewerId && r.user_id !== viewerId;
+
+      const clientName =
+        `${r.client_first_name || ""} ${r.client_last_name || ""}`.trim() || r.client_email || "";
+        {(r.client_email || r.client_first_name || r.client_last_name) ? (
+          <div style={{ opacity: 0.75, fontSize: 13, marginTop: 4 }}>
+            Client:{" "}
+            <b>
+              {(`${r.client_first_name || ""} ${r.client_last_name || ""}`.trim()) || r.client_email}
+            </b>
+            {r.client_email ? <span style={{ opacity: 0.7 }}> · {r.client_email}</span> : null}
+          </div>
+        ) : null}
 
       <div style={{ marginTop: 6, fontSize: 12, opacity: 0.7 }}>
         After approved, if need to cancel or reschedule, call the office, fee may apply - until: <b>{(startDate) || "—"}</b>
