@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
+<ReservationCard
+
 type Me = {
   id: string;
   email: string;
@@ -551,6 +553,7 @@ export default function UserAccount() {
                 <ReservationCard
                   key={r.id}
                   r={r}
+                  viewerId={me.id}
                   onCancel={() => cancelReservation(r.id)}
                   onEdit={(s, e) => editReservation(r.id, s, e)}
                 />
