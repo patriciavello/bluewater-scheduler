@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
+
+
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
@@ -13,6 +15,7 @@ type ApiUser = {
   lastName?: string | null;
   isAdmin: boolean;
   isGoldMember: boolean;
+  isCaptain?: boolean;
   createdAt?: string | null;
 };
 
@@ -53,6 +56,8 @@ export default function AdminUsers() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [createGold, setCreateGold] = useState(false);
+  const [createCaptain, setCreateCaptain] = useState(false);
+
 
   // StrictMode guard (prevents double-fetch on mount in dev)
   const didInit = useRef(false);
@@ -124,6 +129,7 @@ export default function AdminUsers() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           isGoldMember: createGold,
+          isCaptain: createCaptain,
         }),
       });
 
@@ -148,6 +154,7 @@ export default function AdminUsers() {
       setFirstName("");
       setLastName("");
       setCreateGold(false);
+      setCreateCaptain(false);
     } catch (e: any) {
       setErr(e?.message || "Create failed");
     } finally {
@@ -179,6 +186,33 @@ export default function AdminUsers() {
       setLoading(false);
     }
   }
+
+  async function setCaptain(u: ApiUser, nextCaptain: boolean) {
+    setLoading(true);
+    setErr("");
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${u.id}/captain`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ isCaptain: nextCaptain }),
+      });
+  
+      const data = await safeJson(res);
+  
+      if (!res.ok || !(data as any)?.ok) {
+        throw new Error((data as any)?.error || `Update failed (${res.status})`);
+      }
+  
+      const updated = (data as any).user as ApiUser;
+      setUsers((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    } catch (e: any) {
+      setErr(e?.message || "Failed to update captain status");
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+
 
   async function deleteUser(u: ApiUser) {
     if (u.isAdmin) {
@@ -290,6 +324,15 @@ export default function AdminUsers() {
               />
               <span>Create as Gold member</span>
             </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={createCaptain}
+                onChange={(e) => setCreateCaptain(e.target.checked)}
+              />
+              Captain
+            </label>        
+
 
             <button style={styles.primary} type="submit" disabled={loading || tokenMissing}>
               Create
@@ -364,6 +407,13 @@ export default function AdminUsers() {
                         >
                           {u.isGoldMember ? "Demote" : "Promote"}
                         </button>
+                        <button
+                          disabled={loading}
+                          onClick={() => setCaptain(u, !u.isCaptain)}
+                        >
+                          {u.isCaptain ? "Captain ✅" : "Captain"}
+                        </button>
+
                         <button
                           style={styles.btn}
                           onClick={() => deleteUser(u)}
