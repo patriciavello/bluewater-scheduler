@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminUsers from "./admin/AdminUsers";
 
-//filtered.map
+
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -22,8 +22,6 @@ type Captain = {
   lastName?: string | null; 
   email: string };
 
-const [captainOptions, setCaptainOptions] = useState<Record<string, Captain[]>>({});
-const [captainLoading, setCaptainLoading] = useState<Record<string, boolean>>({});
 
 
 type AdminReservation = {
@@ -360,6 +358,10 @@ export default function Admin() {
     () => items.filter((r) => String(r.status).toUpperCase() === "PENDING").length,
     [items]
   );
+  
+  const [captainOptions, setCaptainOptions] = useState<Record<string, Captain[]>>({});
+  const [captainLoading, setCaptainLoading] = useState<Record<string, boolean>>({});
+
 
   function setAndStoreToken(t: string) {
     if (t) localStorage.setItem(TOKEN_KEY, t);
