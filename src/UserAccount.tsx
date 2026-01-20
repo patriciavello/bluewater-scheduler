@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
-
+//find route Status: 
 
 type Me = {
   id: string;
@@ -18,6 +18,7 @@ type Me = {
   zip?: string | null;
   country?: string | null;
   is_goldmember: boolean;
+  is_captain: boolean;
 };
 
 type MyReservation = {
@@ -27,6 +28,7 @@ type MyReservation = {
   start_date: string; // YYYY-MM-DD
   end_exclusive: string; // YYYY-MM-DD
   status: string;
+  display_status?: string;
   notes?: string | null;
 
   user_id?: string;
@@ -433,6 +435,7 @@ export default function UserAccount() {
           <div style={{ opacity: 0.75, marginTop: 4 }}>
             Signed in as <b>{me.email}</b> · Status:{" "}
             <b>{me.is_goldmember ? "Gold Member" : "Standard"}</b>
+            <b>{me.is_captain ? "Captain" : ""}</b>
           </div>
         </div>
 
@@ -587,7 +590,7 @@ function ReservationCard({
   onEdit: (start_date: string, end_exclusive: string) => void;
 }) {
   const status = String(r.status).toUpperCase();
-  
+  const statusText = (r.display_status || r.status || "").toString().toUpperCase();
 
   const isCaptainView =
     !!r.captain_id &&
@@ -653,7 +656,7 @@ function ReservationCard({
         <div>
           <div style={{ fontWeight: 900 }}>{r.boat_name}</div>
           <div style={{ opacity: 0.75, fontSize: 13 }}>
-            Status: <b>{status}</b>
+            Status: <b>{statusText}</b>
           </div>
 
           {/* ✅ Only show client info to captains */}
