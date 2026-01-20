@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminUsers from "./admin/AdminUsers";
 
+//filtered.map
+
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
@@ -14,6 +16,16 @@ type ReservationStatus =
   | "BLOCKED"
   | string;
 
+type Captain = { 
+  id: string; 
+  firstName?: string | null; 
+  lastName?: string | null; 
+  email: string };
+
+const [captainOptions, setCaptainOptions] = useState<Record<string, Captain[]>>({});
+const [captainLoading, setCaptainLoading] = useState<Record<string, boolean>>({});
+
+
 type AdminReservation = {
   id: string;
   boatId: string;
@@ -21,6 +33,15 @@ type AdminReservation = {
   startDate: string; // ISO
   endExclusive: string; // ISO
   status: ReservationStatus;
+
+  userId?: string | null;
+  captainId?: string | null;
+  isGoldMember?: boolean | null;
+
+  captainFirstName?: string | null;
+  captainLastName?: string | null;
+  captainEmail?: string | null;
+
   requesterName: string | null;
   requesterEmail: string | null;
   notes?: string | null;
@@ -427,6 +448,59 @@ export default function Admin() {
     setError("");
   }
 
+  async function loadAvailableCaptains(r: AdminReservation) {
+    if (!token) return;
+    const rid = r.id;
+    setCaptainLoading((p) => ({ ...p, [rid]: true }));
+    try {
+      const url =
+        `${API_BASE}/api/admin/captains/available?start=${encodeURIComponent(r.startDate.slice(0, 10))}` +
+        `&end=${encodeURIComponent(r.endExclusive.slice(0, 10))}`;
+  
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await safeJson(res);
+      if (!res.ok || !data.ok) throw new Error(data.error || `Failed (${res.status})`);
+  
+      setCaptainOptions((p) => ({ ...p, [rid]: Array.isArray(data.captains) ? data.captains : [] }));
+    } catch (e: any) {
+      setError(e?.message || "Failed to load captains");
+    } finally {
+      setCaptainLoading((p) => ({ ...p, [rid]: false }));
+    }
+  }
+  
+  async function assignCaptain(reservationId: string, captainId: string | null) {
+    if (!token) return;
+    setBusyId(reservationId);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/reservations/${reservationId}/assign-captain`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ captainId }),
+      });
+  
+      const data = await safeJson(res);
+      if (!res.ok || !data.ok) throw new Error(data.error || `Assign failed (${res.status})`);
+  
+      // refresh list item locally
+      setItems((prev) =>
+        prev.map((x) => (x.id === reservationId ? { ...x, captainId: (data as any).reservation?.captainId ?? null } : x))
+      );
+  
+      // Optional: reload reservations so captain name/email also updates from backend join
+      await loadReservations();
+    } catch (e: any) {
+      setError(e?.message || "Assign failed");
+    } finally {
+      setBusyId("");
+    }
+  }
+  
+
   useEffect(() => {
     // Load reservations after login so Reservations tab has data
     if (token) loadReservations();
@@ -582,6 +656,10 @@ export default function Admin() {
                 <div style={{ display: "grid", gap: 10 }}>
                   {filtered.map((r) => {
                     const isPending = String(r.status).toUpperCase() === "PENDING";
+                    const isGold = !!r.isGoldMember;
+                    const showCaptainUI = !isGold && String(r.status).toUpperCase() !== "BLOCKED";
+                    const captainLabel =
+                      `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() || r.captainEmail || "";
                     return (
                       <div key={r.id} style={styles.row}>
                         <div style={{ display: "grid", gap: 4 }}>
@@ -600,7 +678,52 @@ export default function Admin() {
                               {r.requesterEmail ? `• ${r.requesterEmail}` : ""}
                             </span>
                           </div>
+                          {showCaptainUI ? (
+                            <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                              <div style={{ fontSize: 12, opacity: 0.75 }}>
+                                Captain: <b>{captainLabel || "—"}</b>
+                              </div>
 
+                              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                                <button
+                                  style={styles.btn}
+                                  onClick={() => loadAvailableCaptains(r)}
+                                  disabled={!!captainLoading[r.id] || busyId === r.id}
+                                >
+                                  {captainLoading[r.id] ? "Loading captains…" : "Choose captain"}
+                                </button>
+
+                                {captainOptions[r.id]?.length ? (
+                                  <select
+                                    style={styles.input}
+                                    value={r.captainId || ""}
+                                    onChange={(e) => assignCaptain(r.id, e.target.value ? e.target.value : null)}
+                                    disabled={busyId === r.id}
+                                  >
+                                    <option value="">— No captain —</option>
+                                    {captainOptions[r.id].map((c) => {
+                                      const nm = `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email;
+                                      return (
+                                        <option key={c.id} value={c.id}>
+                                          {nm}
+                                        </option>
+                                      );
+                                    })}
+                                  </select>
+                                ) : null}
+
+                                {r.captainId ? (
+                                  <button style={styles.btn} onClick={() => assignCaptain(r.id, null)} disabled={busyId === r.id}>
+                                    Remove
+                                  </button>
+                                ) : null}
+                              </div>
+                            </div>
+                          ) : r.isGoldMember ? (
+                            <div style={{ marginTop: 8, fontSize: 12, opacity: 0.65 }}>
+                              Gold Member: captain not required.
+                            </div>
+                          ) : null}
                           <div style={{ opacity: 0.5, fontSize: 12 }}>
                             <span style={{ fontFamily: "ui-monospace, Menlo, Monaco, Consolas, monospace" }}>
                               {r.id}
