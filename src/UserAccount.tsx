@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
-<ReservationCard
+
 
 type Me = {
   id: string;
@@ -587,6 +587,7 @@ function ReservationCard({
   onEdit: (start_date: string, end_exclusive: string) => void;
 }) {
   const status = String(r.status).toUpperCase();
+  
 
   const isCaptainView =
     !!r.captain_id &&
