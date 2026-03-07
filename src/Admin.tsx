@@ -410,21 +410,27 @@ export default function Admin() {
     }
   }
 
-  async function loadReservations() {
+  async function loadReservations(startArg = start, daysArg = days) {
     if (!token) return;
     setLoading(true);
     setError("");
     try {
-      const url = `${API_BASE}/api/admin/reservations?start=${encodeURIComponent(start)}&days=${encodeURIComponent(
-        String(days)
-      )}`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const url =
+        `${API_BASE}/api/admin/reservations?start=${encodeURIComponent(startArg)}` +
+        `&days=${encodeURIComponent(String(daysArg))}` +
+        `&_=${Date.now()}`;
+  
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+  
       const data = await safeJson(res);
-
+  
       if (!res.ok || !(data as any)?.ok) {
         throw new Error((data as any)?.error || `Failed to load (${res.status})`);
       }
-
+  
       setItems(Array.isArray((data as any).reservations) ? (data as any).reservations : []);
     } catch (e: any) {
       const msg = e?.message || "Failed to load reservations";
@@ -611,7 +617,11 @@ export default function Admin() {
                     style={styles.input}
                     type="date"
                     value={start}
-                    onChange={(e) => setStart(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setStart(v);
+                      if (view === "list" && token) loadReservations(v, days);
+                    }}
                   />
                 </label>
 
@@ -623,7 +633,11 @@ export default function Admin() {
                     min={1}
                     max={60}
                     value={days}
-                    onChange={(e) => setDays(Number(e.target.value))}
+                    onChange={(e) => {
+                      const n = Math.max(1, Math.min(Number(e.target.value) || 1, 60));
+                      setDays(n);
+                      if (view === "list" && token) loadReservations(start, n);
+                    }}
                   />
                 </label>
 
