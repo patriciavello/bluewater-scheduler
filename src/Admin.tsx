@@ -90,12 +90,20 @@ function dateKey(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function parseIsoLocal(iso: string) {
+  const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function overlapsDay(startIso: string, endIso: string, day: Date) {
   const dayStart = new Date(day);
   dayStart.setHours(0, 0, 0, 0);
+
   const dayEnd = addDays(dayStart, 1);
-  const s = new Date(startIso);
-  const e = new Date(endIso);
+
+  const s = parseIsoLocal(startIso);
+  const e = parseIsoLocal(endIso);
+
   return s < dayEnd && e > dayStart;
 }
 
