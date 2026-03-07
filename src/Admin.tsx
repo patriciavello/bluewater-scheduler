@@ -56,9 +56,35 @@ function ymd(d: Date) {
 }
 
 function fmt(dtIso: string) {
-  const d = new Date(dtIso);
-  if (Number.isNaN(d.getTime())) return dtIso;
-  return d.toLocaleString();
+  return formatDateOnly(dtIso);
+}
+
+function parseIsoLocal(iso: string) {
+  const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function addDays(d: Date, n: number) {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+
+function formatDateOnly(iso: string) {
+  const d = parseIsoLocal(iso);
+  return d.toLocaleDateString();
+}
+
+function formatReservationRange(startIso: string, endExclusiveIso: string) {
+  const start = parseIsoLocal(startIso);
+
+  // endExclusive is the first FREE day, so display the previous day
+  const visibleEnd = addDays(parseIsoLocal(endExclusiveIso), -1);
+
+  const startText = start.toLocaleDateString();
+  const endText = visibleEnd.toLocaleDateString();
+
+  return startText === endText ? startText : `${startText} - ${endText}`;
 }
 
 async function safeJson(res: Response) {
@@ -77,11 +103,6 @@ async function fetchJson(url: string, init?: RequestInit) {
   return data as any;
 }
 
-function addDays(date: Date, n: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  return d;
-}
 
 function dateKey(d: Date) {
   const yyyy = d.getFullYear();
@@ -90,10 +111,6 @@ function dateKey(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function parseIsoLocal(iso: string) {
-  const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
 
 function overlapsDay(startIso: string, endIso: string, day: Date) {
   const dayStart = new Date(day);
@@ -292,7 +309,7 @@ function AdminCalendarView({
                     }}
                     title={
                       r
-                        ? `${boat.name}\n${fmt(r.startDate)} → ${fmt(r.endExclusive)}\n${status}\n${r.requesterName || ""} ${
+                        ? `${boat.name}\n${formatReservationRange(r.startDate, r.endExclusive)}\n${status}\n${r.requesterName || ""} ${
                             r.requesterEmail || ""
                           }`
                         : "Click to block"
@@ -304,7 +321,7 @@ function AdminCalendarView({
                       if (st === "BLOCKED") return unblock(r.id);
 
                       alert(
-                        `${boat.name}\n\n${fmt(r.startDate)} → ${fmt(r.endExclusive)}\nStatus: ${st}\n\nRequester: ${
+                        `${boat.name}\n\n${formatReservationRange(r.startDate, r.endExclusive)}\nStatus: ${st}\n\nRequester: ${
                           r.requesterName || "—"
                         }\nEmail: ${r.requesterEmail || "—"}\n\nNotes: ${r.notes || "—"}\n\nID: ${r.id}`
                       );
@@ -679,7 +696,7 @@ export default function Admin() {
                           </div>
 
                           <div style={{ opacity: 0.85, fontSize: 13 }}>
-                            {fmt(r.startDate)} → {fmt(r.endExclusive)}
+                            {formatReservationRange(r.startDate, r.endExclusive)}
                           </div>
 
                           <div style={{ fontSize: 13 }}>
