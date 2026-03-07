@@ -435,7 +435,7 @@ export default function UserAccount() {
           <div style={{ opacity: 0.75, marginTop: 4 }}>
             Signed in as <b>{me.email}</b> · Status:{" "}
             <b>{me.is_goldmember ? "Gold Member" : "Standard"}</b>
-            <b>{me.is_captain ? " / Captain" : "}</b>
+            <b>{me.is_captain ? " / Captain" : ""}</b>
           </div>
         </div>
 
