@@ -522,10 +522,12 @@ export default function Admin() {
   
 
   useEffect(() => {
-    // Load reservations after login so Reservations tab has data
-    if (token) loadReservations();
+    if (!token) return;
+    if (view !== "list") return;
+  
+    loadReservations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, view, start, days]);
 
   const showFilters = token && view !== "users"; // users page has its own filters UI
 
