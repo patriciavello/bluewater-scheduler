@@ -55,9 +55,6 @@ function ymd(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function fmt(dtIso: string) {
-  return formatDateOnly(dtIso);
-}
 
 function parseIsoLocal(iso: string) {
   const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
@@ -70,10 +67,6 @@ function addDays(d: Date, n: number) {
   return x;
 }
 
-function formatDateOnly(iso: string) {
-  const d = parseIsoLocal(iso);
-  return d.toLocaleDateString();
-}
 
 function formatReservationRange(startIso: string, endExclusiveIso: string) {
   const start = parseIsoLocal(startIso);
