@@ -12,8 +12,10 @@ type ReservationStatus =
   | "PENDING"
   | "APPROVED"
   | "DENIED"
-  | "CANCELLED"
+  | "CANCELED"
   | "BLOCKED"
+  | "MAINTENANCE"
+  | "OPEN"
   | string;
 
 type Captain = { 
@@ -65,6 +67,8 @@ function calendarCellLabel(r?: AdminReservation) {
   const status = String(r.status || "").toUpperCase();
 
   if (status === "BLOCKED") return "BLOCKED";
+  if (status === "MAINTENANCE") return "MAINTENANCE";
+  if (status === "OPEN") return "OPEN";
 
   if (r.isGoldMember) {
     return r.requesterName || "Gold Member";
@@ -143,10 +147,12 @@ function overlapsDay(startIso: string, endIso: string, day: Date) {
 function statusPriority(s: string) {
   const u = String(s).toUpperCase();
   if (u === "BLOCKED") return 50;
+  if (u === "MAINTENANCE") return 45;
   if (u === "APPROVED") return 40;
   if (u === "PENDING") return 30;
   if (u === "DENIED") return 20;
-  if (u === "CANCELLED") return 10;
+  if (u === "CANCELED") return 10;
+  if (u === "OPEN") return 0;
   return 0;
 }
 
@@ -159,8 +165,12 @@ function statusCellStyle(r?: AdminReservation): React.CSSProperties {
     return { background: "#111827", color: "white" };
   }
 
-  if (status === "DENIED" || status === "CANCELLED") {
-    return { background: "#f3f4f6" };
+  if (status === "MAINTENANCE") {
+    return { background: "#f59e0b", color: "#111827" };
+  }
+
+  if (status === "DENIED" || status === "CANCELED" || status === "OPEN") {
+    return { background: "#f3f4f6", color: "#111827" };
   }
 
   if (r.isGoldMember) {
@@ -206,10 +216,18 @@ function AdminCalendarView({
   );
 
   async function block(boatId: string, day: Date) {
+    const statusInput = prompt("Block status: BLOCKED, MAINTENANCE, or OPEN", "BLOCKED") || "BLOCKED";
+    const status = String(statusInput).toUpperCase();
+  
+    if (!["BLOCKED", "MAINTENANCE", "OPEN"].includes(status)) {
+      alert("Invalid status");
+      return;
+    }
+  
     const note = prompt("Block note (optional):") || "";
-    const daysStr = prompt("How many days to block?", "1") || "1";
+    const daysStr = prompt("How many days?", "1") || "1";
     const nDays = Math.max(1, Math.min(parseInt(daysStr, 10) || 1, 60));
-
+  
     try {
       await fetchJson(`${apiBase}/api/admin/blocks`, {
         method: "POST",
@@ -217,11 +235,17 @@ function AdminCalendarView({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ boatId, startDate: dateKey(day), days: nDays, note }),
+        body: JSON.stringify({
+          boatId,
+          startDate: dateKey(day),
+          days: nDays,
+          status,
+          note,
+        }),
       });
       await load();
     } catch (e: any) {
-      alert(e?.message || "Failed to block");
+      alert(e?.message || "Failed to create block");
     }
   }
 
@@ -237,6 +261,7 @@ function AdminCalendarView({
       alert(e?.message || "Failed to unblock");
     }
   }
+
 
   async function load() {
     setLoading(true);
@@ -273,6 +298,9 @@ function AdminCalendarView({
   const cellMap = useMemo(() => {
     const map = new Map<string, AdminReservation>();
     for (const r of reservations) {
+      const st = String(r.status).toUpperCase();
+      if (st === "DENIED" || st === "CANCELED" || st === "OPEN") continue;
+    
       for (const day of dayList) {
         if (!overlapsDay(r.startDate, r.endExclusive, day)) continue;
         const key = `${r.boatId}|${dateKey(day)}`;
@@ -552,6 +580,35 @@ export default function Admin() {
     }
   }
 
+  //let the admin change reservation status from list page
+  async function changeReservationStatus(id: string, status: string) {
+    if (!token) return;
+    setBusyId(id);
+    setError("");
+  
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/reservations/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+  
+      const data = await safeJson(res);
+      if (!res.ok || !(data as any)?.ok) {
+        throw new Error((data as any)?.error || `Failed to update (${res.status})`);
+      }
+  
+      await loadReservations();
+    } catch (e: any) {
+      setError(e?.message || "Failed to update status");
+    } finally {
+      setBusyId("");
+    }
+  }
+  
   function logout() {
     setAndStoreToken("");
     setItems([]);
@@ -867,6 +924,24 @@ export default function Admin() {
                             Deny
                           </button>
                         </div>
+                        {["DENIED", "CANCELED"].includes(String(r.status).toUpperCase()) ? (
+                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                          <button
+                            style={styles.btn}
+                            disabled={busyId === r.id}
+                            onClick={() => changeReservationStatus(r.id, "OPEN")}
+                          >
+                            Set Open
+                          </button>
+                          <button
+                            style={styles.btn}
+                            disabled={busyId === r.id}
+                            onClick={() => changeReservationStatus(r.id, "BLOCKED")}
+                          >
+                            Set Blocked
+                          </button>
+                        </div>
+                      ) : null}
                       </div>
                     );
                   })}
