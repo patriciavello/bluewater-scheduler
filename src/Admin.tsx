@@ -55,6 +55,25 @@ function ymd(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function calendarCellLabel(r?: AdminReservation) {
+  if (!r) return "";
+
+  const status = String(r.status || "").toUpperCase();
+
+  if (status === "BLOCKED") return "BLOCKED";
+
+  if (r.isGoldMember) {
+    return r.requesterName || "Gold Member";
+  }
+
+  if (r.captainId) {
+    const captainName =
+      `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() || r.captainEmail || "Captain";
+    return captainName;
+  }
+
+  return status;
+}
 
 function parseIsoLocal(iso: string) {
   const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
@@ -127,15 +146,36 @@ function statusPriority(s: string) {
   return 0;
 }
 
-function statusCellStyle(status: string): React.CSSProperties {
-  const u = String(status).toUpperCase();
-  if (!u) return { background: "white" };
-  if (u === "BLOCKED") return { background: "#111827", color: "white" };
-  if (u === "APPROVED") return { background: "#dbeafe" };
-  if (u === "PENDING") return { background: "#fef3c7" };
-  if (u === "DENIED") return { background: "#f3f4f6" };
-  if (u === "CANCELLED") return { background: "#f3f4f6" };
-  return { background: "#f3f4f6" };
+function statusCellStyle(r?: AdminReservation): React.CSSProperties {
+  if (!r) return { background: "white" };
+
+  const status = String(r.status || "").toUpperCase();
+
+  if (status === "BLOCKED") {
+    return { background: "#111827", color: "white" };
+  }
+
+  if (status === "DENIED" || status === "CANCELLED") {
+    return { background: "#f3f4f6" };
+  }
+
+  if (r.isGoldMember) {
+    return { background: "#fbbf24", color: "#111827" };
+  }
+
+  if (r.captainId) {
+    return { background: "#86efac", color: "#111827" };
+  }
+
+  if (status === "APPROVED") {
+    return { background: "#dbeafe", color: "#111827" };
+  }
+
+  if (status === "PENDING") {
+    return { background: "#fef3c7", color: "#111827" };
+  }
+
+  return { background: "#f3f4f6", color: "#111827" };
 }
 
 function AdminCalendarView({
@@ -286,7 +326,8 @@ function AdminCalendarView({
                 const key = `${boat.id}|${dateKey(d)}`;
                 const r = cellMap.get(key);
                 const status = r ? String(r.status).toUpperCase() : "";
-                const cellStyle = statusCellStyle(status);
+                const cellStyle = statusCellStyle(r);
+                const label = calendarCellLabel(r);
 
                 return (
                   <button
@@ -302,9 +343,15 @@ function AdminCalendarView({
                     }}
                     title={
                       r
-                        ? `${boat.name}\n${formatReservationRange(r.startDate, r.endExclusive)}\n${status}\n${r.requesterName || ""} ${
-                            r.requesterEmail || ""
-                          }`
+                        ? `${boat.name}\n${formatReservationRange(r.startDate, r.endExclusive)}\nStatus: ${status}\n${
+                            r.isGoldMember
+                              ? `Gold Member: ${r.requesterName || "—"}`
+                              : r.captainId
+                              ? `Captain: ${
+                                  `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() || r.captainEmail || "—"
+                                }`
+                              : ""
+                          }\nRequester: ${r.requesterName || ""} ${r.requesterEmail || ""}`
                         : "Click to block"
                     }
                     onClick={() => {
@@ -320,11 +367,21 @@ function AdminCalendarView({
                       );
                     }}
                   >
-                    {status ? (
-                      <div style={{ fontSize: 11, fontWeight: 900, lineHeight: 1.1 }}>{status}</div>
-                    ) : (
-                      <div style={{ opacity: 0.25 }}> </div>
-                    )}
+                  {r ? (
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 800,
+                        lineHeight: 1.15,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {label}
+                    </div>
+                  ) : (
+                    <div style={{ opacity: 0.25 }}> </div>
+                  )}
                   </button>
                 );
               })}
