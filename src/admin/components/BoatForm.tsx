@@ -7,12 +7,15 @@ type BoatLike = {
   location?: string | null;
   capacity?: number | null;
 
-  // backend might use either:
   number_of_beds?: number | null;
   numberOfBeds?: number | null;
 
   image_url?: string | null;
   imageUrl?: string | null;
+
+  purpose?: string | null;
+  price_per_day?: number | null;
+  pricePerDay?: number | null;
 };
 
 export default function BoatForm({
@@ -42,6 +45,14 @@ export default function BoatForm({
 
   const initialImg =
     initial?.imageUrl ?? initial?.image_url ?? "";
+  
+  const [purpose, setPurpose] = useState(initial?.purpose ?? "");
+  const initialPrice =
+      initial?.pricePerDay ?? initial?.price_per_day ?? null;
+    
+  const [pricePerDay, setPricePerDay] = useState<string>(
+      initialPrice != null ? String(initialPrice) : ""
+    );
 
   const [imageUrl, setImageUrl] = useState(initialImg);
   const [saving, setSaving] = useState(false);
@@ -58,6 +69,12 @@ export default function BoatForm({
         ? String(initial.numberOfBeds ?? initial.number_of_beds)
         : ""
     );
+    setPurpose(initial.purpose ?? "");
+    setPricePerDay(
+      (initial.pricePerDay ?? initial.price_per_day) != null
+      ? String(initial.pricePerDay ?? initial.price_per_day)
+      : ""
+      );
     setImageUrl(initial.imageUrl ?? initial.image_url ?? "");
   }, [initial?.id]); // reset when switching boats
 
@@ -93,6 +110,8 @@ export default function BoatForm({
       capacity: normalizeNumber(capacity),
       number_of_beds: normalizeNumber(beds),
       image_url: imageUrl.trim() || null,
+      purpose: purpose.trim() || null,
+      price_per_day: normalizeNumber(pricePerDay),
     };
 
     // Remove nulls to keep PATCH clean (optional)
@@ -189,14 +208,36 @@ export default function BoatForm({
               </label>
 
               <label style={labelStyle}>
-                <span style={labelTextStyle}>Location</span>
+                <span style={labelTextStyle}>Location (Marina name or Address)</span>
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   style={inputStyle}
-                  placeholder="e.g., Miami"
+                  placeholder="Burnt Store marina, Miami"
                 />
               </label>
+
+              <label style={labelStyle}>
+                <span>Boat Purpose</span>
+                <select value={purpose} onChange={(e) => setPurpose(e.target.value)}>
+                  <option value="">Select purpose</option>
+                  <option value="bluewater">Bluewater</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>
+                  <span>Price per day</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={pricePerDay}
+                    onChange={(e) => setPricePerDay(e.target.value)}
+                    placeholder="0.00"
+                />
+              </label>
+
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>

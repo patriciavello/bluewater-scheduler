@@ -46,7 +46,11 @@ type AdminReservation = {
   createdAt?: string | null;
 };
 
-type Boat = { id: string; name: string };
+type Boat = {
+  id: string;
+  name: string;
+  purpose?: string | null;
+};
 
 function ymd(d: Date) {
   const yyyy = d.getFullYear();
@@ -193,6 +197,7 @@ function AdminCalendarView({
   const [reservations, setReservations] = useState<AdminReservation[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const [purposeFilter, setPurposeFilter] = useState("all");
 
   const startDateObj = useMemo(() => new Date(`${start}T00:00:00`), [start]);
   const dayList = useMemo(
@@ -248,6 +253,7 @@ function AdminCalendarView({
       const b: Boat[] = (boatsData.boats || []).map((x: any) => ({
         id: x.id,
         name: x.name,
+        purpose: x.purpose ?? null,
       }));
 
       setBoats(b);
@@ -278,11 +284,32 @@ function AdminCalendarView({
     }
     return map;
   }, [reservations, dayList]);
+  const filteredBoats = useMemo(() => {
+    if (purposeFilter === "all") return boats;
+    return boats.filter(
+      (boat) => String(boat.purpose || "").toLowerCase() === purposeFilter
+    );
+  }, [boats, purposeFilter]);
 
   return (
     <div style={{ marginTop: 14 }}>
       {loading && <div style={{ opacity: 0.8 }}>Loading…</div>}
       {err && <div style={styles.error}>{err}</div>}
+
+      <div style={{ marginBottom: 12 }}>
+        <label style={styles.label}>
+          <span>Purpose</span>
+          <select
+            style={styles.input}
+            value={purposeFilter}
+            onChange={(e) => setPurposeFilter(e.target.value)}
+          >
+            <option value="all">All</option>
+            <option value="bluewater">Bluewater</option>
+            <option value="maintenance">Maintenance</option>
+          </select>
+        </label>
+      </div>
 
       <div style={styles.calendarWrap}>
         <div style={{ minWidth: Math.max(900, 220 + days * 70) }}>
@@ -310,7 +337,7 @@ function AdminCalendarView({
             ))}
           </div>
 
-          {boats.map((boat) => (
+          {filteredBoats.map((boat) => (
             <div
               key={boat.id}
               style={{
