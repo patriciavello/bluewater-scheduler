@@ -552,7 +552,8 @@ export default function UserAccount() {
             <div style={{ opacity: 0.7 }}>No reservations yet.</div>
           ) : (
             <div style={{ display: "grid", gap: 10 }}>
-              {resvs.map((r) => (
+              {resvs.filter((r) => String(r.status).toUpperCase() !== "OPEN")
+                .map((r) => (
                 <ReservationCard
                   key={r.id}
                   r={r}
