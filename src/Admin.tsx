@@ -466,6 +466,7 @@ export default function Admin() {
   const [hideCanceled, setHideCanceled] = useState(true);
   const [hideDenied, setHideDenied] = useState(false);
   const [hideOpen, setHideOpen] = useState(true);
+  const [hideBlocked, setHideBlocked] = useState(true);
   const [search, setSearch] = useState("");
 
   const [items, setItems] = useState<AdminReservation[]>([]);
@@ -484,6 +485,7 @@ export default function Admin() {
         if (hideCanceled && status === "CANCELED") return false;
         if (hideDenied && status === "DENIED") return false;
         if (hideOpen && status === "OPEN") return false;
+        if (hideBlocked && status === "BLOCKED") return false;
   
         return true;
       })
@@ -503,7 +505,7 @@ export default function Admin() {
         return hay.includes(s);
       })
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  }, [items, showPendingOnly, hideCanceled, hideDenied, hideOpen, search]);
+  }, [items, showPendingOnly, hideCanceled, hideDenied, hideOpen, hideBlocked, search]);
 
   const pendingCount = useMemo(
     () => items.filter((r) => String(r.status).toUpperCase() === "PENDING").length,
@@ -850,6 +852,14 @@ export default function Admin() {
                           onChange={(e) => setHideOpen(e.target.checked)}
                         />
                         <span>Hide open</span>
+                      </label>
+                      <label style={styles.checkboxRow}>
+                        <input
+                          type="checkbox"
+                          checked={hideBlocked}
+                          onChange={(e) => setHideBlocked(e.target.checked)}
+                        />
+                        <span>Hide blocked</span>
                       </label>
 
                       <div style={{ marginLeft: "auto", textAlign: "right", opacity: 0.8 }}>
