@@ -463,6 +463,9 @@ export default function Admin() {
   const [start, setStart] = useState(() => ymd(new Date()));
   const [days, setDays] = useState(14);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
+  const [hideCanceled, setHideCanceled] = useState(true);
+  const [hideDenied, setHideDenied] = useState(true);
+  const [hideOpen, setHideOpen] = useState(true);
   const [search, setSearch] = useState("");
 
   const [items, setItems] = useState<AdminReservation[]>([]);
@@ -472,17 +475,35 @@ export default function Admin() {
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
+  
     return (items || [])
-      .filter((r) => (!showPendingOnly ? true : String(r.status).toUpperCase() === "PENDING"))
+      .filter((r) => {
+        const status = String(r.status).toUpperCase();
+  
+        if (showPendingOnly && status !== "PENDING") return false;
+        if (hideCanceled && status === "CANCELED") return false;
+        if (hideDenied && status === "DENIED") return false;
+        if (hideOpen && status === "OPEN") return false;
+  
+        return true;
+      })
       .filter((r) => {
         if (!s) return true;
-        const hay = [r.boatName, r.requesterName || "", r.requesterEmail || "", r.status, r.id]
+  
+        const hay = [
+          r.boatName,
+          r.requesterName || "",
+          r.requesterEmail || "",
+          r.status,
+          r.id,
+        ]
           .join(" ")
           .toLowerCase();
+  
         return hay.includes(s);
       })
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  }, [items, showPendingOnly, search]);
+  }, [items, showPendingOnly, hideCanceled, hideDenied, hideOpen, search]);
 
   const pendingCount = useMemo(
     () => items.filter((r) => String(r.status).toUpperCase() === "PENDING").length,
@@ -801,6 +822,32 @@ export default function Admin() {
                         onChange={(e) => setShowPendingOnly(e.target.checked)}
                       />
                       <span>Pending only</span>
+                    </label>
+                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
+                      <input
+                        type="checkbox"
+                        checked={hideCanceled}
+                        onChange={(e) => setHideCanceled(e.target.checked)}
+                      />
+                      <span>Hide canceled</span>
+                    </label>
+
+                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
+                      <input
+                        type="checkbox"
+                        checked={hideDenied}
+                        onChange={(e) => setHideDenied(e.target.checked)}
+                      />
+                      <span>Hide denied</span>
+                    </label>
+
+                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
+                      <input
+                        type="checkbox"
+                        checked={hideOpen}
+                        onChange={(e) => setHideOpen(e.target.checked)}
+                      />
+                      <span>Hide open</span>
                     </label>
 
                     <div style={{ marginLeft: "auto", textAlign: "right", opacity: 0.8 }}>
