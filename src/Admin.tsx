@@ -462,9 +462,9 @@ export default function Admin() {
 
   const [start, setStart] = useState(() => ymd(new Date()));
   const [days, setDays] = useState(14);
-  const [showPendingOnly, setShowPendingOnly] = useState(true);
+  const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [hideCanceled, setHideCanceled] = useState(true);
-  const [hideDenied, setHideDenied] = useState(true);
+  const [hideDenied, setHideDenied] = useState(false);
   const [hideOpen, setHideOpen] = useState(true);
   const [search, setSearch] = useState("");
 
