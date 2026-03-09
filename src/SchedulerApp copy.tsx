@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Search, Ship, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 // -------------------- API --------------------
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() ||
   "http://localhost:3001";
-
 
 type Boat = {
   id: string;
@@ -344,7 +342,7 @@ function Modal({
 
               <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-xs text-slate-500">
-                  This creates a <b>PENDING</b> request. Once your payment is confirmed, your reservation will change to approved.
+                  This creates a <b>PENDING</b> request. If dates overlap, it will be rejected.
                 </div>
                 <UiButton variant="primary" onClick={submitRequest} className="justify-center">
                   {submitting ? "Submitting..." : "Request reservation"}
@@ -361,7 +359,6 @@ function Modal({
 
 // -------------------- Main --------------------
 export default function SchedulerApp() {
-  const navigate = useNavigate(); 
   const [startDateStr, setStartDateStr] = useState("");
   const [durationStr, setDurationStr] = useState("");
   const [selectedBoatIds, setSelectedBoatIds] = useState<Set<string>>(() => new Set());
@@ -543,34 +540,30 @@ export default function SchedulerApp() {
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-10 sm:px-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80 ring-1 ring-white/15">
-              <Ship className="h-4 w-4" />
-              Boat Charter Scheduler
-            </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Plan your next escape <span className="text-white/80">in one view</span>
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
-              Filter your fleet, pick a start date and duration, then scan availability across the next 14 days. Click any boat
-              name for details and to complete your reservation online.
-            </p>
-            <div className="mt-2 text-xs text-white/55">
-              API: <span className="font-mono">{API_BASE}</span>
-            </div>
-
-            {errorMsg ? (
-              <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-100 ring-1 ring-red-200/20">
-                {errorMsg}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80 ring-1 ring-white/15">
+                <Ship className="h-4 w-4" />
+                Boat Charter Scheduler
               </div>
-            ) : null}
-          </div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                Plan your next escape <span className="text-white/80">in one view</span>
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
+                Filter your fleet, pick a start date and duration, then scan availability across the next 14 days. Click any boat
+                name for details and to complete your reservation online.
+              </p>
+              <div className="mt-2 text-xs text-white/55">
+                API: <span className="font-mono">{API_BASE}</span>
+              </div>
 
-          <UiButton onClick={() => navigate("/account")}>
-            My Account
-          </UiButton>
-        </div>
+              {errorMsg ? (
+                <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-100 ring-1 ring-red-200/20">
+                  {errorMsg}
+                </div>
+              ) : null}
+            </div>
+          </div>
 
           {/* Filters */}
           <Card className="mt-6 overflow-hidden bg-white/10 ring-1 ring-white/15 backdrop-blur-md">
