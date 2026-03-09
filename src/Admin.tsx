@@ -815,43 +815,46 @@ export default function Admin() {
                       />
                     </label>
 
-                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
-                      <input
-                        type="checkbox"
-                        checked={showPendingOnly}
-                        onChange={(e) => setShowPendingOnly(e.target.checked)}
-                      />
-                      <span>Pending only</span>
-                    </label>
-                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
-                      <input
-                        type="checkbox"
-                        checked={hideCanceled}
-                        onChange={(e) => setHideCanceled(e.target.checked)}
-                      />
-                      <span>Hide canceled</span>
-                    </label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginTop: 22 }}>
+                      <label style={styles.checkboxRow}>
+                        <input
+                          type="checkbox"
+                          checked={showPendingOnly}
+                          onChange={(e) => setShowPendingOnly(e.target.checked)}
+                        />
+                        <span>Show only pending</span>
+                      </label>
 
-                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
-                      <input
-                        type="checkbox"
-                        checked={hideDenied}
-                        onChange={(e) => setHideDenied(e.target.checked)}
-                      />
-                      <span>Hide denied</span>
-                    </label>
+                      <label style={styles.checkboxRow}>
+                        <input
+                          type="checkbox"
+                          checked={hideCanceled}
+                          onChange={(e) => setHideCanceled(e.target.checked)}
+                        />
+                        <span>Hide canceled</span>
+                      </label>
 
-                    <label style={{ ...styles.checkboxRow, marginTop: 22 }}>
-                      <input
-                        type="checkbox"
-                        checked={hideOpen}
-                        onChange={(e) => setHideOpen(e.target.checked)}
-                      />
-                      <span>Hide open</span>
-                    </label>
+                      <label style={styles.checkboxRow}>
+                        <input
+                          type="checkbox"
+                          checked={hideDenied}
+                          onChange={(e) => setHideDenied(e.target.checked)}
+                        />
+                        <span>Hide denied</span>
+                      </label>
 
-                    <div style={{ marginLeft: "auto", textAlign: "right", opacity: 0.8 }}>
-                      Pending: <b>{pendingCount}</b> / Total: <b>{items.length}</b>
+                      <label style={styles.checkboxRow}>
+                        <input
+                          type="checkbox"
+                          checked={hideOpen}
+                          onChange={(e) => setHideOpen(e.target.checked)}
+                        />
+                        <span>Hide open</span>
+                      </label>
+
+                      <div style={{ marginLeft: "auto", textAlign: "right", opacity: 0.8 }}>
+                        Pending: <b>{pendingCount}</b> / Total: <b>{items.length}</b>
+                      </div>
                     </div>
                   </>
                 ) : (
