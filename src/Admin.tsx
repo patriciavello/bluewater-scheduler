@@ -358,9 +358,16 @@ function AdminCalendarView({
                   fontSize: 12,
                   opacity: 0.85,
                   borderLeft: "1px solid #f1f5f9",
+                  textAlign: "center",
+                  lineHeight: 1.2,
                 }}
               >
-                {d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                <div style={{ fontSize: 11, opacity: 0.7 }}>
+                  {d.toLocaleDateString(undefined, { weekday: "short" })}
+                </div>
+                <div style={{ fontWeight: 700 }}>
+                  {d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                </div>
               </div>
             ))}
           </div>
