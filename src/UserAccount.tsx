@@ -37,6 +37,12 @@ type MyReservation = {
   client_email?: string | null;
   client_first_name?: string | null;
   client_last_name?: string | null;
+
+  requested_start_date?: string | null;
+  requested_end_exclusive?: string | null;
+  change_request_note?: string | null;
+  change_fee_percent?: number | null;
+  change_fee_amount?: number | null;
 };
 
 
@@ -245,6 +251,8 @@ export default function UserAccount() {
         boat_name: r.boat_name ?? r.boatName ?? "",
         start_date: toYMD(r.start_date ?? r.startDate),
         end_exclusive: toYMD(r.end_exclusive ?? r.endExclusive),
+        requested_start_date: toYMD(r.requested_start_date ?? r.requestedStartDate),
+        requested_end_exclusive: toYMD(r.requested_end_exclusive ?? r.requestedEndExclusive),
       }));
       setResvs(normalized);
     } catch (e: any) {
@@ -270,20 +278,42 @@ export default function UserAccount() {
     }
   }
 
-  async function editReservation(id: string, start_date: string, end_exclusive: string) {
+  async function editReservation(
+    id: string, 
+    start_date: string, 
+    end_exclusive: string,
+    change_note?: string,
+    accept_change_fee?: boolean
+  ) {
     setLoading(true);
     setMsg("");
     try {
       const { res, data } = await apiFetch(`/api/me/reservations/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ start_date, end_exclusive }),
+        body: JSON.stringify({ 
+          start_date, 
+          end_exclusive,
+          change_note,
+          accept_change_fee, 
+        }),
       });
   
-      if (!res.ok || !data.ok) throw new Error(data.error || "Update failed");
+      if (!res.ok || !data.ok) {
+        const feeMsg =
+          data?.changeFeeAmount != null
+            ? ` Change fee: $${Number(data.changeFeeAmount).toFixed(2)} (${data.changeFeePercent}%).`
+            : "";
+        throw new Error((data.error || "Update failed") + feeMsg);
+      }
   
-      setMsg("Updated ✅");
+      if (data.mode === "CHANGE_REQUEST_SUBMITTED") {
+        setMsg(
+          `Change request submitted ✅ Fee: $${Number(data.changeFeeAmount || 0).toFixed(2)}. Waiting for admin approval.`
+        );
+      } else {
+        setMsg("Updated ✅");
+      }
   
-      // ✅ Refetch the list so UI always matches backend
       await loadMyReservations();
     } catch (e: any) {
       setMsg(e?.message || "Update failed");
@@ -559,7 +589,7 @@ export default function UserAccount() {
                   r={r}
                   viewerId={me.id}
                   onCancel={() => cancelReservation(r.id)}
-                  onEdit={(s, e) => editReservation(r.id, s, e)}
+                  onEdit={(s, e, note, acceptFee) => editReservation(r.id, s, e, note, acceptFee)}
                 />
               ))}
             </div>
@@ -588,7 +618,12 @@ function ReservationCard({
   r: MyReservation;
   viewerId: string;
   onCancel: () => void;
-  onEdit: (start_date: string, end_exclusive: string) => void;
+  onEdit: (
+    start_date: string,
+    end_exclusive: string,
+    change_note?: string,
+    accept_change_fee?: boolean
+  ) => void;
 }) {
   const status = String(r.status).toUpperCase();
   const statusText = (r.display_status || r.status || "").toString().toUpperCase();
@@ -599,18 +634,17 @@ function ReservationCard({
     !!r.user_id &&
     r.user_id !== viewerId;
 
-  // Captains should not edit/cancel client reservations here
-  const canEdit = status === "PENDING" && !isCaptainView;
+  const canEditPending = status === "PENDING" && !isCaptainView;
+  const canRequestApprovedChange = status === "APPROVED" && !isCaptainView;
+  const isReadOnly = !canEditPending && !canRequestApprovedChange;
 
   const clientDisplay =
     (`${r.client_first_name || ""} ${r.client_last_name || ""}`.trim()) ||
     r.client_email ||
     "";
 
-  // initial dates
   const [startDate, setStartDate] = useState(r.start_date);
 
-  // compute initial duration from stored exclusive date
   const initialDuration = (() => {
     if (!r.start_date || !r.end_exclusive) return 1;
     const s = new Date(r.start_date + "T00:00:00");
@@ -621,6 +655,10 @@ function ReservationCard({
 
   const [durationDays, setDurationDays] = useState(initialDuration);
 
+  // New fields for approved change requests
+  const [changeNote, setChangeNote] = useState("");
+  const [acceptFee, setAcceptFee] = useState(false);
+
   useEffect(() => {
     setStartDate(r.start_date);
 
@@ -630,9 +668,11 @@ function ReservationCard({
       const diff = Math.round((e.getTime() - s.getTime()) / 86400000);
       setDurationDays(diff > 0 ? diff : 1);
     }
-  }, [r.start_date, r.end_exclusive]);
 
-  // compute inclusive end date for display
+    setChangeNote("");
+    setAcceptFee(false);
+  }, [r.start_date, r.end_exclusive, r.status]);
+
   let endInclusive = "";
   if (startDate && durationDays) {
     const d = new Date(startDate + "T00:00:00");
@@ -640,7 +680,6 @@ function ReservationCard({
     endInclusive = d.toISOString().slice(0, 10);
   }
 
-  // When user clicks save, convert duration → exclusive end date
   function handleSave() {
     if (!startDate || !durationDays) return;
 
@@ -648,7 +687,24 @@ function ReservationCard({
     d.setDate(d.getDate() + Number(durationDays));
     const endExclusive = d.toISOString().slice(0, 10);
 
-    onEdit(startDate, endExclusive);
+    if (canEditPending) {
+      onEdit(startDate, endExclusive);
+      return;
+    }
+
+    if (canRequestApprovedChange) {
+      if (!changeNote.trim()) {
+        alert("Please provide a justification for the change request.");
+        return;
+      }
+
+      if (!acceptFee) {
+        alert("Please accept the change fee before submitting the request.");
+        return;
+      }
+
+      onEdit(startDate, endExclusive, changeNote.trim(), acceptFee);
+    }
   }
 
   return (
@@ -660,7 +716,6 @@ function ReservationCard({
             Status: <b>{statusText}</b>
           </div>
 
-          {/* ✅ Only show client info to captains */}
           {isCaptainView && clientDisplay ? (
             <div style={{ marginTop: 6, fontSize: 13, opacity: 0.85 }}>
               Client: <b>{clientDisplay}</b>
@@ -680,18 +735,18 @@ function ReservationCard({
 
       <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <label style={styles.label}>
-          <span>Start date</span>
+          <span>{canRequestApprovedChange ? "Requested new start date" : "Start date"}</span>
           <input
             style={styles.input}
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            disabled={!canEdit}
+            disabled={isReadOnly}
           />
         </label>
 
         <label style={styles.label}>
-          <span>Duration (days)</span>
+          <span>{canRequestApprovedChange ? "Requested duration (days)" : "Duration (days)"}</span>
           <input
             style={styles.input}
             type="number"
@@ -699,20 +754,59 @@ function ReservationCard({
             max={60}
             value={durationDays}
             onChange={(e) => setDurationDays(Number(e.target.value))}
-            disabled={!canEdit}
+            disabled={isReadOnly}
           />
         </label>
       </div>
 
+      {canRequestApprovedChange ? (
+        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+          <label style={styles.label}>
+            <span>Justification for change request</span>
+            <textarea
+              style={{ ...styles.input, minHeight: 90, resize: "vertical" }}
+              value={changeNote}
+              onChange={(e) => setChangeNote(e.target.value)}
+              placeholder="Explain why you need to change this approved reservation"
+            />
+          </label>
+
+          <label
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 8,
+              fontSize: 13,
+              lineHeight: 1.4,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={acceptFee}
+              onChange={(e) => setAcceptFee(e.target.checked)}
+              style={{ marginTop: 2 }}
+            />
+            <span>
+              I understand this reservation is already approved, and I accept the applicable change fee.
+              The request will be sent to admin for re-approval.
+            </span>
+          </label>
+        </div>
+      ) : null}
+
       <div style={{ marginTop: 6, fontSize: 12, opacity: 0.7 }}>
-        {isCaptainView
+        {status === "PENDING" && !isCaptainView
+          ? "Pending reservations can be changed or cancelled by the user."
+          : status === "APPROVED" && !isCaptainView
+          ? "Approved reservations can be changed by request only. A fee may apply and admin re-approval is required."
+          : status === "CHANGE_REQUESTED"
+          ? "Your change request is pending admin review."
+          : isCaptainView
           ? "To reschedule or cancel, please contact the office. Fees may apply."
-          : "After approved, if need to cancel or reschedule, call the office, fee may apply."}
-        {" "}
-        Until: <b>{startDate || "—"}</b>
+          : "This reservation cannot be edited here."}
       </div>
 
-      {status === "PENDING" && !isCaptainView ? (
+      {canEditPending ? (
         <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button style={styles.btn} onClick={handleSave}>
             Change my reservation
@@ -720,6 +814,20 @@ function ReservationCard({
           <button style={styles.btn} onClick={onCancel}>
             Cancel reservation
           </button>
+        </div>
+      ) : null}
+
+      {canRequestApprovedChange ? (
+        <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button style={styles.btn} onClick={handleSave}>
+            Request change
+          </button>
+        </div>
+      ) : null}
+
+      {status === "CHANGE_REQUESTED" ? (
+        <div style={{ marginTop: 10, padding: 10, borderRadius: 10, background: "#f3f4f6", fontSize: 13 }}>
+          Change request submitted. Waiting for admin approval.
         </div>
       ) : null}
 
