@@ -311,14 +311,18 @@ function Modal({
             </div>
 
             <div className="p-5 sm:p-6 text-slate-900">
-              <div className="grid gap-4 sm:grid-cols-5">
+              <div className="grid gap-4 sm:grid-cols-6">
                 <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Capacity</div>
+                  <div className="text-xs text-slate-500">Max. Capacity</div>
                   <div className="text-lg font-semibold">{boat?.capacity ?? "—"} guests</div>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Beds</div>
                   <div className="text-lg font-semibold">{boat?.number_of_beds ?? "—"}</div>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-500">Boat Type</div>
+                  <div className="text-lg font-semibold">{boat?.type ?? "—"}</div>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Start Day</div>
