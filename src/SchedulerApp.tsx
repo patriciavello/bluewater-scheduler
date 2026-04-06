@@ -195,6 +195,9 @@ function Modal({
     }
   }, [open]);
 
+  const pricePerDay = Number(boat?.price_per_day || 0);
+  const totalPrice = pricePerDay * Math.max(1, durationDays);
+
   async function submitRequest() {
     if (!boat?.id) return;
 
@@ -308,7 +311,7 @@ function Modal({
             </div>
 
             <div className="p-5 sm:p-6 text-slate-900">
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-5">
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Capacity</div>
                   <div className="text-lg font-semibold">{boat?.capacity ?? "—"} guests</div>
@@ -320,7 +323,23 @@ function Modal({
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Requested</div>
                   <div className="text-sm font-semibold">
-                    {requestStartIso} • {durationDays} day(s)
+                    {requestStartIso}  StartDay
+                  </div>
+                </div>                
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-500">Number of days</div>
+                  <div className="text-sm font-semibold">
+                    {durationDays}  Day(s)
+                  </div>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-500">Price</div>
+                  <div className="text-lg font-semibold">
+                    ${totalPrice.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {durationDays} × ${pricePerDay.toFixed(2)}/day
+                  </div>
                   </div>
                 </div>
               </div>
