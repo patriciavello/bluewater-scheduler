@@ -19,6 +19,7 @@ type Boat = {
   image_url: string | null;
   description: string | null;
   active: boolean;
+  price_per_day: number | null;
 };
 
 type ApiReservation = {
