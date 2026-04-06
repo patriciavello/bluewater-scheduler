@@ -52,6 +52,7 @@ type Boat = {
   id: string;
   name: string;
   purpose?: string | null;
+  price_per_day?: number | null;
 };
 
 function ymd(d: Date) {
@@ -459,6 +460,155 @@ function AdminCalendarView({
   );
 }
 
+function EditReservationModal({
+  open,
+  reservation,
+  boats,
+  onClose,
+  onSave,
+  saving,
+}: {
+  open: boolean;
+  reservation: AdminReservation | null;
+  boats: Boat[];
+  onClose: () => void;
+  onSave: (payload: { boatId: string; startDate: string; durationDays: number }) => Promise<void> | void;
+  saving: boolean;
+}) {
+  const [boatId, setBoatId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [durationDays, setDurationDays] = useState(1);
+  const [localError, setLocalError] = useState("");
+
+  useEffect(() => {
+    if (!reservation) return;
+
+    setBoatId(String(reservation.boatId || ""));
+    setStartDate(String(reservation.startDate || "").slice(0, 10));
+
+    const s = parseIsoLocal(String(reservation.startDate).slice(0, 10));
+    const e = parseIsoLocal(String(reservation.endExclusive).slice(0, 10));
+    const diff = Math.round((e.getTime() - s.getTime()) / 86400000);
+
+    setDurationDays(diff > 0 ? diff : 1);
+    setLocalError("");
+  }, [reservation]);
+
+  if (!open || !reservation) return null;
+
+  const selectedBoat = boats.find((b) => String(b.id) === String(boatId));
+  const pricePerDay = Number(selectedBoat?.price_per_day || 0);
+  const totalPrice = pricePerDay * Math.max(1, durationDays);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLocalError("");
+
+    if (!boatId) {
+      setLocalError("Please select a boat.");
+      return;
+    }
+
+    if (!startDate) {
+      setLocalError("Please select a start date.");
+      return;
+    }
+
+    if (!durationDays || durationDays < 1) {
+      setLocalError("Duration must be at least 1 day.");
+      return;
+    }
+
+    await onSave({
+      boatId,
+      startDate,
+      durationDays,
+    });
+  }
+
+  return (
+    <div style={modalStyles.overlay}>
+      <div style={modalStyles.modal}>
+        <div style={modalStyles.header}>
+          <div>
+            <div style={{ fontWeight: 900, fontSize: 18 }}>Edit reservation</div>
+            <div style={{ fontSize: 12, opacity: 0.65 }}>{reservation.id}</div>
+          </div>
+
+          <button style={styles.btn} onClick={onClose} disabled={saving}>
+            Close
+          </button>
+        </div>
+
+        <form onSubmit={submit} style={{ display: "grid", gap: 12, marginTop: 14 }}>
+          <label style={styles.label}>
+            <span>Boat</span>
+            <select
+              style={styles.input}
+              value={boatId}
+              onChange={(e) => setBoatId(e.target.value)}
+              disabled={saving}
+            >
+              <option value="">Select boat</option>
+              {boats.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <label style={styles.label}>
+              <span>Start date</span>
+              <input
+                style={styles.input}
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                disabled={saving}
+              />
+            </label>
+
+            <label style={styles.label}>
+              <span>Duration (days)</span>
+              <input
+                style={styles.input}
+                type="number"
+                min={1}
+                max={60}
+                value={durationDays}
+                onChange={(e) => setDurationDays(Math.max(1, Number(e.target.value) || 1))}
+                disabled={saving}
+              />
+            </label>
+          </div>
+
+          <div style={modalStyles.priceBox}>
+            <div style={{ fontWeight: 800 }}>
+              Estimated price: ${totalPrice.toFixed(2)}
+            </div>
+            <div style={{ fontSize: 13, opacity: 0.7 }}>
+              {durationDays} day(s) × ${pricePerDay.toFixed(2)}/day
+            </div>
+          </div>
+
+          {localError ? <div style={styles.error}>{localError}</div> : null}
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <button type="button" style={styles.btn} onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" style={styles.primary} disabled={saving}>
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || "");
   const [username, setUsername] = useState("admin");
@@ -480,6 +630,9 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string>("");
   const [error, setError] = useState("");
+
+  const [boats, setBoats] = useState<Boat[]>([]);
+  const [editing, setEditing] = useState<AdminReservation | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -583,6 +736,28 @@ export default function Admin() {
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadBoats() {
+    try {
+      const res = await fetch(`${API_BASE}/api/boats`);
+      const data = await safeJson(res);
+
+      if (!res.ok || !(data as any)?.boats) {
+        throw new Error((data as any)?.error || `Failed to load boats (${res.status})`);
+      }
+
+      const mapped: Boat[] = ((data as any).boats || []).map((b: any) => ({
+        id: String(b.id),
+        name: b.name,
+        purpose: b.purpose ?? null,
+        price_per_day: b.price_per_day ?? null,
+      }));
+
+      setBoats(mapped);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load boats");
     }
   }
 
@@ -697,12 +872,46 @@ export default function Admin() {
     }
   }
   
+  async function updateReservation(
+    id: string,
+    payload: { boatId: string; startDate: string; durationDays: number }
+  ) {
+    if (!token) return;
+
+    setBusyId(id);
+    setError("");
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/reservations/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await safeJson(res);
+
+      if (!res.ok || !(data as any)?.ok) {
+        throw new Error((data as any)?.error || `Failed to update (${res.status})`);
+      }
+
+      await loadReservations();
+      setEditing(null);
+    } catch (e: any) {
+      setError(e?.message || "Failed to update reservation");
+    } finally {
+      setBusyId("");
+    }
+  }
 
   useEffect(() => {
     if (!token) return;
     if (view !== "list") return;
-  
+
     loadReservations();
+    loadBoats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, view, start, days]);
 
@@ -977,12 +1186,21 @@ export default function Admin() {
 
                         <div style={styles.actions}>
                           <button
+                            style={styles.btn}
+                            disabled={busyId === r.id}
+                            onClick={() => setEditing(r)}
+                          >
+                            Edit
+                          </button>
+
+                          <button
                             style={styles.primary}
                             disabled={!isPending || busyId === r.id}
                             onClick={() => act(r.id, "approve")}
                           >
                             {busyId === r.id ? "Working…" : "Approve"}
                           </button>
+
                           <button
                             style={styles.btn}
                             disabled={!isPending || busyId === r.id}
@@ -1018,6 +1236,17 @@ export default function Admin() {
           )}
         </>
       )}
+            <EditReservationModal
+              open={!!editing}
+              reservation={editing}
+              boats={boats}
+              saving={busyId === editing?.id}
+              onClose={() => setEditing(null)}
+              onSave={(payload) => {
+                if (!editing) return Promise.resolve();
+                return updateReservation(editing.id, payload);
+              }}
+            />
     </div>
   );
 }
@@ -1095,5 +1324,37 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #e5e7eb",
     borderRadius: 14,
     background: "white",
+  },
+};
+const modalStyles: Record<string, React.CSSProperties> = {
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(17, 24, 39, 0.55)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    zIndex: 1000,
+  },
+  modal: {
+    width: "100%",
+    maxWidth: 560,
+    background: "white",
+    borderRadius: 16,
+    padding: 16,
+    boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  priceBox: {
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid #e5e7eb",
+    background: "#f9fafb",
   },
 };
