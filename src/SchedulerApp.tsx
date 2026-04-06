@@ -340,7 +340,6 @@ function Modal({
                   <div className="text-xs text-slate-500">
                     {durationDays} × ${pricePerDay.toFixed(2)}/day
                   </div>
-                  </div>
                 </div>
               </div>
 
