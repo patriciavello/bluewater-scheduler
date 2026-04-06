@@ -322,7 +322,7 @@ function Modal({
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Boat Type</div>
-                  <div className="text-lg font-semibold">{boat?.type ?? "—"}</div>
+                  <div className="text-sm font-semibold">{boat?.type ?? "—"}</div>
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Start Day</div>
@@ -338,7 +338,7 @@ function Modal({
                 </div>
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Price</div>
-                  <div className="text-lg font-semibold">
+                  <div className="text-sm font-semibold">
                     ${totalPrice.toFixed(2)}
                   </div>
                   <div className="text-xs text-slate-500">
@@ -737,18 +737,24 @@ export default function SchedulerApp() {
                     key={b.id}
                     className="grid grid-cols-[260px_repeat(14,1fr)] border-b border-white/10 last:border-b-0"
                   >
-                    <div className="flex items-center gap-3 p-3">
-                      <button
-                        type="button"
-                        onClick={() => setModalBoatId(b.id)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-left text-sm font-medium text-white ring-1 ring-white/15 hover:bg-white/15"
-                      >
-                        <span className="truncate">{b.name}</span>
-                        <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70 ring-1 ring-white/10">
-                          {b.type || "Boat"}
-                        </span>
-                      </button>
-                    </div>
+                      <div className="flex items-center gap-3 p-3">
+                        <div className="flex min-w-0 flex-col">
+                          <button
+                            type="button"
+                            onClick={() => setModalBoatId(b.id)}
+                            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-left text-sm font-medium text-white ring-1 ring-white/15 hover:bg-white/15"
+                          >
+                            <span className="truncate">{b.name}</span>
+                            <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70 ring-1 ring-white/10">
+                              {b.type || "Boat"}
+                            </span>
+                          </button>
+
+                          <div className="mt-1 pl-1 text-xs text-white/65">
+                            ${Number(b.price_per_day || 0).toFixed(2)}/day
+                          </div>
+                        </div>
+                      </div>
 
                     {days.map((d) => {
                       const iso = toISODate(d);
