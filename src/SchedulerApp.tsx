@@ -311,7 +311,7 @@ function Modal({
             </div>
 
             <div className="p-5 sm:p-6 text-slate-900">
-              <div className="grid gap-4 sm:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-5">
                 <div className="rounded-xl bg-slate-50 p-4">
                   <div className="text-xs text-slate-500">Capacity</div>
                   <div className="text-lg font-semibold">{boat?.capacity ?? "—"} guests</div>
@@ -332,6 +332,16 @@ function Modal({
                     {durationDays} day(s)
                   </div>
                 </div>
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <div className="text-xs text-slate-500">Price</div>
+                  <div className="text-lg font-semibold">
+                    ${totalPrice.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {durationDays} × ${pricePerDay.toFixed(2)}/day
+                  </div>
+                </div>
+                
               </div>
 
               <div className="mt-4">
