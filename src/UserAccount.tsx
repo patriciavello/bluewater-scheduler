@@ -58,13 +58,20 @@ async function safeJson(res: Response) {
 
 async function apiFetch(path: string, init: RequestInit = {}) {
   // IMPORTANT: credentials include so browser sends/receives HttpOnly cookie `session`
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string> | undefined),
+  };
+
+  const method = (init.method || "GET").toUpperCase();
+  const hasBody = init.body != null && method !== "GET" && method !== "HEAD";
+
+  if (hasBody && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init.headers || {}),
-    },
+    headers,
   });
 
   const data = await safeJson(res);
