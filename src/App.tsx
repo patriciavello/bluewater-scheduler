@@ -5,6 +5,8 @@ import AdminLayout from "./admin/AdminLayout";
 import UserAccount from "./UserAccount";
 import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
+import PaymentSuccessPage from "./PaymentSuccessPage";
+import PaymentCancelledPage from "./PaymentCancelledPage";
 
 
 export default function App() {
@@ -15,6 +17,8 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/admin" element={<AdminLayout />}>
+      <Route path="/payment-success" element={<PaymentSuccessPage />} />
+      <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
        <Route path="*" element={<AdminRouter />} />
       </Route>
 

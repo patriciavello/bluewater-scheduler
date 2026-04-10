@@ -222,12 +222,16 @@ function Modal({
 
       // Build requester fields from logged-in user (keeps backend compatibility)
       const u = meData.user;
+      const isGold = !!u.is_goldmember;
+      const endpoint = isGold
+        ? `${apiBase}/api/reservations/request`
+        : `${apiBase}/api/payments/create-checkout-session`;
       const requesterEmail: string = u.email || "";
       const requesterName: string =
         `${u.first_name || ""} ${u.last_name || ""}`.trim() || "";
 
       // ✅ Create reservation request (send cookie)
-      const res = await fetch(`${apiBase}/api/reservations/request`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -236,8 +240,6 @@ function Modal({
           startDate: requestStartIso,
           durationDays,
           notes,
-
-          // keep backward compatibility if your backend still expects these:
           requesterName,
           requesterEmail,
         }),
@@ -257,7 +259,12 @@ function Modal({
         throw new Error(data?.error || `Request failed (HTTP ${res.status})`);
       }
 
-      setSubmitMsg("✅ Request submitted! Status: PENDING");
+      if (isGold) {setSubmitMsg("✅ Request submitted! Status: PENDING");
+      } else {
+        if (!data.url) {throw new Error ("Missing Stripe Checkout URL");
+        }
+        window.location.href = data.url;
+      }
     } catch (e: any) {
       setSubmitMsg(`❌ ${String(e?.message || "Request failed")}`);
     } finally {
@@ -367,9 +374,10 @@ function Modal({
               </div>
 
               <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-xs text-slate-500">
-                  This creates a <b>PENDING</b> request. Once your payment is confirmed, your reservation will change to approved.
-                </div>
+              <div className="text-xs text-slate-500">
+                Gold members can submit a reservation request directly.
+                Non-gold members will be redirected to secure card payment before the reservation is created.
+              </div>
                 <UiButton variant="primary" onClick={submitRequest} className="justify-center">
                   {submitting ? "Submitting..." : "Request reservation"}
                 </UiButton>
