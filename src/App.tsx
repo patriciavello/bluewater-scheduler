@@ -16,9 +16,9 @@ export default function App() {
       <Route path="/account" element={<UserAccount />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/admin" element={<AdminLayout />}>
       <Route path="/payment-success" element={<PaymentSuccessPage />} />
       <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
+      <Route path="/admin" element={<AdminLayout />}>
        <Route path="*" element={<AdminRouter />} />
       </Route>
 
