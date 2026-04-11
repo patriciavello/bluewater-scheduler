@@ -38,6 +38,10 @@ type MyReservation = {
   client_first_name?: string | null;
   client_last_name?: string | null;
 
+  payment_status?: string | null;
+  amount_paid?: number | null;
+  paid_at?: string | null;
+
   requested_start_date?: string | null;
   requested_end_exclusive?: string | null;
   change_request_note?: string | null;
@@ -84,6 +88,7 @@ export default function UserAccount() {
   // login form
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [hidePastReservations, setHidePastReservations] = useState(true);
 
   // toggle: login vs create account
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -106,6 +111,8 @@ export default function UserAccount() {
   // strictmode guard
   const didInit = useRef(false);
 
+
+  
   async function loadMe() {
     setLoading(true);
     setMsg("");
@@ -463,6 +470,20 @@ export default function UserAccount() {
     );
   }
 
+  function isPastReservation(r: MyReservation) {
+    return String(r.display_status || "").toUpperCase() === "PAST RESERVATION";
+  }
+  
+  function formatPaidAt(value?: string | null) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString();
+  }
+  
+  const visibleReservations = resvs
+    .filter((r) => String(r.status).toUpperCase() !== "OPEN")
+    .filter((r) => (hidePastReservations ? !isPastReservation(r) : true));
 
   return (
     <div style={styles.page}>
@@ -583,14 +604,26 @@ export default function UserAccount() {
         <div style={{ ...styles.card, marginTop: 12 }}>
           <h3 style={{ marginTop: 0 }}>My reservations</h3>
 
+          <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+              <input
+                type="checkbox"
+                checked={hidePastReservations}
+                onChange={(e) => setHidePastReservations(e.target.checked)}
+              />
+              Hide past reservations
+            </label>
+          </div>
+
           {loading ? (
             <div style={{ opacity: 0.7 }}>Loading…</div>
-          ) : resvs.length === 0 ? (
-            <div style={{ opacity: 0.7 }}>No reservations yet.</div>
+          ) : visibleReservations.length === 0 ? (
+            <div style={{ opacity: 0.7 }}>
+              {hidePastReservations ? "No current or upcoming reservations." : "No reservations yet."}
+            </div>
           ) : (
             <div style={{ display: "grid", gap: 10 }}>
-              {resvs.filter((r) => String(r.status).toUpperCase() !== "OPEN")
-                .map((r) => (
+              {visibleReservations.map((r) => (
                 <ReservationCard
                   key={r.id}
                   r={r}
@@ -649,6 +682,16 @@ function ReservationCard({
     (`${r.client_first_name || ""} ${r.client_last_name || ""}`.trim()) ||
     r.client_email ||
     "";
+    const paidAmount =
+      r.amount_paid != null && !Number.isNaN(Number(r.amount_paid))
+      ? Number(r.amount_paid).toFixed(2)
+      : null;
+
+    const paidAtText = (() => {
+      if (!r.paid_at) return null;
+      const d = new Date(r.paid_at);
+      return Number.isNaN(d.getTime()) ? String(r.paid_at) : d.toLocaleString();
+    })();
 
   const [startDate, setStartDate] = useState(r.start_date);
 
@@ -837,6 +880,19 @@ function ReservationCard({
           Change request submitted. Waiting for admin approval.
         </div>
       ) : null}
+
+        {(r.payment_status || paidAmount || paidAtText) ? (
+             <div style={{ marginTop: 10, padding: 10, borderRadius: 10, background: "#f9fafb", fontSize: 13 }}>
+              <div>
+                Payment status: <b>{r.payment_status || "—"}</b>
+              </div>
+              <div>
+                Paid amount: <b>{paidAmount ? `$${paidAmount}` : "—"}</b>
+              </div>
+              <div>                  Payment date: <b>{paidAtText || "—"}</b>
+               </div>
+            </div>
+        ) : null}
 
       {r.notes ? <div style={{ marginTop: 8, opacity: 0.75, fontSize: 13 }}>Notes: {r.notes}</div> : null}
     </div>
