@@ -1178,7 +1178,6 @@ export default function Admin() {
                 <div style={{ display: "grid", gap: 10 }}>
                   {filtered.map((r) => {
                     const statusUpper = String(r.status).toUpperCase();
-                    const isPending = statusUpper === "PENDING";
                     const canApprove = statusUpper === "PENDING";
                     const canDeny = ["PENDING", "APPROVED"].includes(statusUpper);
                     const isGold = !!r.isGoldMember;
