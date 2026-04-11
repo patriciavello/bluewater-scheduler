@@ -42,6 +42,10 @@ type MyReservation = {
   amount_paid?: number | null;
   paid_at?: string | null;
 
+  refunded_amount?: number | null;
+  refunded_at?: string | null;
+  refund_status?: string | null;
+
   requested_start_date?: string | null;
   requested_end_exclusive?: string | null;
   change_request_note?: string | null;
@@ -267,6 +271,10 @@ export default function UserAccount() {
         end_exclusive: toYMD(r.end_exclusive ?? r.endExclusive),
         requested_start_date: toYMD(r.requested_start_date ?? r.requestedStartDate),
         requested_end_exclusive: toYMD(r.requested_end_exclusive ?? r.requestedEndExclusive),
+        paid_at: r.paid_at ?? r.paidAt ?? null,
+        refunded_amount: r.refunded_amount ?? r.refundedAmount ?? null,
+        refunded_at: r.refunded_at ?? r.refundedAt ?? null,
+        refund_status: r.refund_status ?? r.refundStatus ?? null,
       }));
       setResvs(normalized);
     } catch (e: any) {
@@ -682,12 +690,19 @@ function ReservationCard({
     (`${r.client_first_name || ""} ${r.client_last_name || ""}`.trim()) ||
     r.client_email ||
     "";
-    const paidAmount =
+  const paidAmount =
       r.amount_paid != null && !Number.isNaN(Number(r.amount_paid))
       ? Number(r.amount_paid).toFixed(2)
       : null;
 
-    const paidAtText = formatPaidAt(r.paid_at);
+  const paidAtText = formatPaidAt(r.paid_at);
+
+  const refundedAmount =
+    r.refunded_amount != null && !Number.isNaN(Number(r.refunded_amount))
+    ? Number(r.refunded_amount).toFixed(2)
+    : null;
+
+  const refundedAtText = formatPaidAt(r.refunded_at);
 
   const [startDate, setStartDate] = useState(r.start_date);
 
@@ -889,6 +904,28 @@ function ReservationCard({
                </div>
             </div>
         ) : null}
+
+        {(r.refund_status || refundedAmount || (r.refunded_at && refundedAtText !== "—")) ? (
+          <div style={{ marginTop: 10, padding: 10, borderRadius: 10, background: "#f9fafb", fontSize: 13 }}>
+            <div>
+              Refund status: <b>{r.refund_status || "—"}</b>
+            </div>
+            <div>
+              Refunded amount: <b>{refundedAmount ? `$${refundedAmount}` : "—"}</b>
+            </div>
+            <div>
+              Refund date: <b>{refundedAtText || "—"}</b>
+            </div>
+          </div>
+        ) : null}
+
+        <div>
+          Net paid: <b>{
+            r.amount_paid != null
+              ? `$${(Number(r.amount_paid || 0) - Number(r.refunded_amount || 0)).toFixed(2)}`
+              : "—"
+          }</b>
+        </div>
 
       {r.notes ? <div style={{ marginTop: 8, opacity: 0.75, fontSize: 13 }}>Notes: {r.notes}</div> : null}
     </div>
