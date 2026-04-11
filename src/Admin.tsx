@@ -25,7 +25,6 @@ type Captain = {
   email: string };
 
 
-
 type AdminReservation = {
   id: string;
   boatId: string;
@@ -50,6 +49,9 @@ type AdminReservation = {
   paymentStatus?: string | null;
   amountPaid?: number | null;
   paidAt?: string | null;
+
+  refundedAmount?: number | null;
+  refundedAt?: string | null;
 };
 
 type Boat = {
@@ -933,6 +935,46 @@ export default function Admin() {
     }
   }
 
+  async function refundReservation(id: string) {
+    if (!token) return;
+  
+    const input = prompt("Refund percentage (1-100)", "100");
+    if (!input) return;
+  
+    const percent = Number(input);
+    if (!Number.isFinite(percent) || percent <= 0 || percent > 100) {
+      alert("Invalid percentage");
+      return;
+    }
+  
+    setBusyId(id);
+    setError("");
+  
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/reservations/${id}/refund`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ percent }),
+      });
+  
+      const data = await safeJson(res);
+  
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Refund failed");
+      }
+  
+      alert(`Refunded $${Number(data.refundedNow || 0).toFixed(2)}`);
+      await loadReservations();
+    } catch (e: any) {
+      alert(e?.message || "Refund failed");
+    } finally {
+      setBusyId("");
+    }
+  }
+
   useEffect(() => {
     if (!token) return;
     if (view !== "list") return;
@@ -1246,7 +1288,19 @@ export default function Admin() {
                           >
                             Deny
                           </button>
+
+                          {["DENIED", "CANCELED"].includes(String(r.status).toUpperCase()) &&
+                            ["PAID", "PARTIALLY_REFUNDED"].includes(String(r.paymentStatus || "").toUpperCase()) && (
+                              <button
+                                style={styles.btn}
+                                disabled={busyId === r.id}
+                                onClick={() => refundReservation(r.id)}
+                              >
+                                Refund
+                              </button>
+                            )}
                         </div>
+
                         {["DENIED", "CANCELED"].includes(String(r.status).toUpperCase()) ? (
                         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                           <button
