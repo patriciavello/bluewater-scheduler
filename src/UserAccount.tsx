@@ -474,12 +474,7 @@ export default function UserAccount() {
     return String(r.display_status || "").toUpperCase() === "PAST RESERVATION";
   }
   
-  function formatPaidAt(value?: string | null) {
-    if (!value) return "—";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleString();
-  }
+
   
   const visibleReservations = resvs
     .filter((r) => String(r.status).toUpperCase() !== "OPEN")
@@ -667,7 +662,12 @@ function ReservationCard({
 }) {
   const status = String(r.status).toUpperCase();
   const statusText = (r.display_status || r.status || "").toString().toUpperCase();
-
+  function formatPaidAt(value?: string | null) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString();
+  }
   const isCaptainView =
     !!r.captain_id &&
     r.captain_id === viewerId &&
@@ -687,11 +687,7 @@ function ReservationCard({
       ? Number(r.amount_paid).toFixed(2)
       : null;
 
-    const paidAtText = (() => {
-      if (!r.paid_at) return null;
-      const d = new Date(r.paid_at);
-      return Number.isNaN(d.getTime()) ? String(r.paid_at) : d.toLocaleString();
-    })();
+    const paidAtText = formatPaidAt(r.paid_at);
 
   const [startDate, setStartDate] = useState(r.start_date);
 
