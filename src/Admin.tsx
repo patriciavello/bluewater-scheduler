@@ -46,6 +46,10 @@ type AdminReservation = {
   requesterEmail: string | null;
   notes?: string | null;
   createdAt?: string | null;
+
+  paymentStatus?: string | null;
+  amountPaid?: number | null;
+  paidAt?: string | null;
 };
 
 type Boat = {
@@ -95,6 +99,18 @@ function addDays(d: Date, n: number) {
   return x;
 }
 
+function formatMoney(v: any) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return `$${n.toFixed(2)}`;
+}
+
+function formatPaidAt(value?: string | null) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString();
+}
 
 function formatReservationRange(startIso: string, endExclusiveIso: string) {
   const start = parseIsoLocal(startIso);
@@ -192,6 +208,8 @@ function statusCellStyle(r?: AdminReservation): React.CSSProperties {
 
   return { background: "#f3f4f6", color: "#111827" };
 }
+
+
 
 function AdminCalendarView({
   token,
@@ -424,9 +442,16 @@ function AdminCalendarView({
                       if (st === "BLOCKED") return unblock(r.id);
 
                       alert(
-                        `${boat.name}\n\n${formatReservationRange(r.startDate, r.endExclusive)}\nStatus: ${st}\n\nRequester: ${
-                          r.requesterName || "—"
-                        }\nEmail: ${r.requesterEmail || "—"}\n\nNotes: ${r.notes || "—"}\n\nID: ${r.id}`
+                        `${boat.name}\n\n` +
+                          `${formatReservationRange(r.startDate, r.endExclusive)}\n` +
+                          `Status: ${st}\n` +
+                          `Payment: ${r.paymentStatus || (r.isGoldMember ? "Payment offline" : "—")}\n` +
+                          `Amount: ${r.amountPaid != null ? formatMoney(r.amountPaid) : "—"}\n` +
+                          `Paid at: ${r.paidAt ? formatPaidAt(r.paidAt) : "—"}\n\n` +
+                          `Requester: ${r.requesterName || "—"}\n` +
+                          `Email: ${r.requesterEmail || "—"}\n\n` +
+                          `Notes: ${r.notes || "—"}\n\n` +
+                          `ID: ${r.id}`
                       );
                     }}
                   >
@@ -658,6 +683,8 @@ export default function Admin() {
           r.requesterEmail || "",
           r.status,
           r.id,
+          r.paymentStatus || "",
+          r.amountPaid != null ? String(r.amountPaid) : "",
         ]
           .join(" ")
           .toLowerCase();
@@ -1131,6 +1158,17 @@ export default function Admin() {
                               {r.requesterEmail ? `• ${r.requesterEmail}` : ""}
                             </span>
                           </div>
+                          <div style={{ marginTop: 8, fontSize: 13, lineHeight: 1.5 }}>
+                          <div>
+                            Payment: <b>{r.paymentStatus || (r.isGoldMember ? "Payment offline" : "—")}</b>
+                          </div>
+                          <div>
+                            Amount: <b>{r.amountPaid != null ? formatMoney(r.amountPaid) : "—"}</b>
+                          </div>
+                          <div>
+                            Paid at: <b>{r.paidAt ? formatPaidAt(r.paidAt) : "—"}</b>
+                          </div>
+                        </div>
                           {showCaptainUI ? (
                             <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                               <div style={{ fontSize: 12, opacity: 0.75 }}>
@@ -1358,3 +1396,4 @@ const modalStyles: Record<string, React.CSSProperties> = {
     background: "#f9fafb",
   },
 };
+
