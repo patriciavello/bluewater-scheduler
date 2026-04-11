@@ -52,6 +52,7 @@ type AdminReservation = {
 
   refundedAmount?: number | null;
   refundedAt?: string | null;
+  refundStatus?: string | null;
 };
 
 type Boat = {
@@ -1212,6 +1213,19 @@ export default function Admin() {
                           <div>
                             Paid at: <b>{r.paidAt ? formatPaidAt(r.paidAt) : "—"}</b>
                           </div>
+                          {(r.refundedAmount != null || r.refundedAt || r.refundStatus) ? (
+                            <div style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5 }}>
+                              <div>
+                                Refund status: <b>{r.refundStatus || "—"}</b>
+                              </div>
+                              <div>
+                                Refunded amount: <b>{r.refundedAmount != null ? formatMoney(r.refundedAmount) : "—"}</b>
+                              </div>
+                              <div>
+                                Refunded at: <b>{r.refundedAt ? formatPaidAt(r.refundedAt) : "—"}</b>
+                              </div>
+                            </div>
+                          ) : null}
                         </div>
                           {showCaptainUI ? (
                             <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
