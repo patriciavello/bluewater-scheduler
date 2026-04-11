@@ -1177,7 +1177,10 @@ export default function Admin() {
               ) : (
                 <div style={{ display: "grid", gap: 10 }}>
                   {filtered.map((r) => {
-                    const isPending = String(r.status).toUpperCase() === "PENDING";
+                    const statusUpper = String(r.status).toUpperCase();
+                    const isPending = statusUpper === "PENDING";
+                    const canApprove = statusUpper === "PENDING";
+                    const canDeny = ["PENDING", "APPROVED"].includes(statusUpper);
                     const isGold = !!r.isGoldMember;
                     const showCaptainUI = !isGold && String(r.status).toUpperCase() !== "BLOCKED";
                     const captainLabel =
@@ -1275,7 +1278,7 @@ export default function Admin() {
 
                           <button
                             style={styles.primary}
-                            disabled={!isPending || busyId === r.id}
+                            disabled={!canApprove || busyId === r.id}
                             onClick={() => act(r.id, "approve")}
                           >
                             {busyId === r.id ? "Working…" : "Approve"}
@@ -1283,12 +1286,11 @@ export default function Admin() {
 
                           <button
                             style={styles.btn}
-                            disabled={!isPending || busyId === r.id}
+                            disabled={!canDeny || busyId === r.id}
                             onClick={() => act(r.id, "deny")}
                           >
                             Deny
                           </button>
-
                           {["DENIED", "CANCELED"].includes(String(r.status).toUpperCase()) &&
                             ["PAID", "PARTIALLY_REFUNDED"].includes(String(r.paymentStatus || "").toUpperCase()) && (
                               <button
