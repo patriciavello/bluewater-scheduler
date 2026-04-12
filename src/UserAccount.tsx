@@ -535,6 +535,13 @@ export default function UserAccount() {
         </a>
       </div>
 
+      //add a button for maitenance request
+      <a href="/maintenance/request" style={{ textDecoration: "none" }}>
+        <button style={styles.btn}>
+          + Maintenance request
+        </button>
+      </a>
+
 
       {msg ? <div style={{ ...styles.msg, marginTop: 12 }}>{msg}</div> : null}
 
@@ -931,7 +938,6 @@ function ReservationCard({
     </div>
   );
 }
-
 
 
 const styles: Record<string, React.CSSProperties> = {
