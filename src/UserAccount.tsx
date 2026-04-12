@@ -535,7 +535,7 @@ export default function UserAccount() {
         </a>
       </div>
 
-      //add a button for maitenance request
+      {/*add a button for maitenance request*/}
       <a href="/maintenance/request" style={{ textDecoration: "none" }}>
         <button style={styles.btn}>
           + Maintenance request
