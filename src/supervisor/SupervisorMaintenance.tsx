@@ -41,6 +41,12 @@ export default function SupervisorMaintenance() {
     loadItems();
   }, []);
 
+  function toYMD(value?: string | null) {
+    if (!value) return "";
+    const s = String(value);
+    return s.length >= 10 ? s.slice(0, 10) : s;
+  }
+
   async function loadItems() {
     if (!token) return;
     setLoading(true);
@@ -137,27 +143,27 @@ export default function SupervisorMaintenance() {
             </div>
 
             <div>
-              <input
-                type="date"
-                style={styles.input}
-                value={i.scheduledStartDate || ""}
-                onChange={(e) =>
-                  updateItem(i.id, { scheduledStartDate: e.target.value })
-                }
-                disabled={busyId === i.id}
-              />
+            <input
+              type="date"
+              style={styles.input}
+              value={toYMD(i.scheduledStartDate)}
+              onChange={(e) =>
+                updateItem(i.id, { scheduledStartDate: e.target.value })
+              }
+              disabled={busyId === i.id}
+            />
             </div>
 
             <div>
-              <input
-                type="date"
-                style={styles.input}
-                value={i.scheduledEndDate || ""}
-                onChange={(e) =>
-                  updateItem(i.id, { scheduledEndDate: e.target.value })
-                }
-                disabled={busyId === i.id}
-              />
+            <input
+              type="date"
+              style={styles.input}
+              value={toYMD(i.scheduledEndDate)}
+              onChange={(e) =>
+                updateItem(i.id, { scheduledEndDate: e.target.value })
+              }
+              disabled={busyId === i.id}
+            />
             </div>
 
             <div>
