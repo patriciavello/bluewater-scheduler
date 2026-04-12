@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminUsers from "./admin/AdminUsers";
 import AdminMaintenance from "./admin/AdminMaintenance";
+import SupervisorMaintenance from "./supervisor/SupervisorMaintenance";
 
 
 const API_BASE =
@@ -643,7 +644,7 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance">("calendar");
+  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor">("calendar");
 
   const [start, setStart] = useState(() => ymd(new Date()));
   const [days, setDays] = useState(14);
@@ -1011,7 +1012,8 @@ export default function Admin() {
             <button style={styles.btn} onClick={() => setView("maintenance")} disabled={view === "maintenance"}>
               Maintenance
             </button>
-
+            <button onClick={() => setView("supervisor")}>Supervisor</button>
+            
             <button
               style={styles.btn}
               onClick={() => {
@@ -1172,6 +1174,8 @@ export default function Admin() {
             <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} />
           ) : view === "users" ? (
             <AdminUsers />
+          ) : view === "supervisor" ? (
+            <SupervisorMaintenance />
           ) : view === "maintenance" ? (
             <AdminMaintenance />
           ) : (
