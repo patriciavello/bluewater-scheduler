@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminUsers from "./admin/AdminUsers";
+import AdminMaintenance from "./admin/AdminMaintenance";
 
 
 
@@ -643,7 +644,7 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [view, setView] = useState<"calendar" | "list" | "users">("calendar");
+  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance">("calendar");
 
   const [start, setStart] = useState(() => ymd(new Date()));
   const [days, setDays] = useState(14);
@@ -1008,6 +1009,9 @@ export default function Admin() {
             <button style={styles.btn} onClick={() => setView("users")} disabled={view === "users"}>
               Users
             </button>
+            <button style={styles.btn} onClick={() => setView("maintenance")} disabled={view === "maintenance"}>
+              Maintenance
+            </button>
 
             <button
               style={styles.btn}
@@ -1164,9 +1168,11 @@ export default function Admin() {
             </section>
           ) : null}
 
-          {/* ✅ ONLY ONE render path (no duplicates) */}
+          {/* ✅ ONLY ONE render path for calendar, user and maitenance */}
           {view === "calendar" ? (
             <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} />
+          ) : view === "maintenance" ? (
+            <AdminMaintenance />
           ) : view === "users" ? (
             <AdminUsers />
           ) : (
