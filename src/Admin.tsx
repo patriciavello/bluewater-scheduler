@@ -1168,13 +1168,13 @@ export default function Admin() {
             </section>
           ) : null}
 
-          {/* ✅ ONLY ONE render path for calendar, user and maitenance */}
+          {/* ✅ ONLY ONE render path for calendar, users, maintenance, and reservations */}
           {view === "calendar" ? (
             <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} />
-          ) : view === "maintenance" ? (
-            <AdminMaintenance />
           ) : view === "users" ? (
             <AdminUsers />
+          ) : view === "maintenance" ? (
+            <AdminMaintenance />
           ) : (
             <section style={{ marginTop: 14 }}>
               {loading ? (
