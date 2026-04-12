@@ -147,9 +147,17 @@ export default function SupervisorMaintenance() {
               type="date"
               style={styles.input}
               value={toYMD(i.scheduledStartDate)}
-              onChange={(e) =>
-                updateItem(i.id, { scheduledStartDate: e.target.value })
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+              
+                setItems(prev =>
+                  prev.map(x =>
+                    x.id === i.id ? { ...x, scheduledStartDate: val } : x
+                  )
+                );
+              
+                updateItem(i.id, { scheduledStartDate: val });
+              }}
               disabled={busyId === i.id}
             />
             </div>
@@ -159,9 +167,17 @@ export default function SupervisorMaintenance() {
               type="date"
               style={styles.input}
               value={toYMD(i.scheduledEndDate)}
-              onChange={(e) =>
-                updateItem(i.id, { scheduledEndDate: e.target.value })
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+              
+                setItems(prev =>
+                  prev.map(x =>
+                    x.id === i.id ? { ...x, scheduledEndtDate: val } : x
+                  )
+                );
+              
+                updateItem(i.id, { scheduledEndDate: val });
+              }}
               disabled={busyId === i.id}
             />
             </div>
