@@ -20,6 +20,13 @@ type Item = {
   scheduledEndDate?: string | null;
 };
 
+type Technician = {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+};
+
 async function safeJson(res: Response) {
   const text = await res.text();
   try {
@@ -36,9 +43,11 @@ export default function SupervisorMaintenance() {
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
 
   useEffect(() => {
     loadItems();
+    loadTechnicians();
   }, []);
 
   function toYMD(value?: string | null) {
@@ -102,6 +111,25 @@ export default function SupervisorMaintenance() {
     }
   }
 
+  async function loadTechnicians() {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/role-users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      const data = await safeJson(res);
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to load technicians");
+      }
+  
+      const techs = (data.users || []).filter((u: any) => !!u.isTechnician);
+      setTechnicians(techs);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load technicians");
+    }
+  }
+
   return (
     <div style={styles.page}>
       <h2>Supervisor Maintenance</h2>
@@ -131,15 +159,27 @@ export default function SupervisorMaintenance() {
             <div>{i.requiredFixDate || "—"}</div>
 
             <div>
-              <input
-                style={styles.input}
-                value={i.technicianUserId || ""}
-                placeholder="tech id"
-                onChange={(e) =>
-                  updateItem(i.id, { technicianUserId: e.target.value })
-                }
-                disabled={busyId === i.id}
-              />
+            <select
+              style={styles.input}
+              value={i.technicianUserId || ""}
+              onChange={(e) =>
+                updateItem(i.id, {
+                  technicianUserId: e.target.value || null,
+                })
+              }
+              disabled={busyId === i.id}
+            >
+              <option value="">Select technician</option>
+              {technicians.map((t) => {
+                const label =
+                  `${t.firstName || ""} ${t.lastName || ""}`.trim() || t.email;
+                return (
+                  <option key={t.id} value={t.id}>
+                    {label}
+                  </option>
+                );
+              })}
+            </select>
             </div>
 
             <div>
