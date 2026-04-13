@@ -14,6 +14,8 @@ type ApiUser = {
   firstName?: string | null;
   lastName?: string | null;
   isAdmin: boolean;
+  isTechnician?: boolean;
+  isSupervisor?: boolean;
   isGoldMember: boolean;
   isCaptain?: boolean;
   createdAt?: string | null;
@@ -212,7 +214,33 @@ export default function AdminUsers() {
     }
   }
   
-
+  async function updateRoles(
+    id: string,
+    patch: { isTechnician?: boolean; isSupervisor?: boolean }
+  ) {
+    setLoading(true);
+    setErr("");
+  
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${id}/roles`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify(patch),
+      });
+  
+      const data = await safeJson(res);
+      if (!res.ok || !(data as any)?.ok) {
+        throw new Error((data as any)?.error || "Failed to update roles");
+      }
+  
+      const updated = (data as any).user as ApiUser;
+      setUsers((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    } catch (e: any) {
+      setErr(e?.message || "Failed to update roles");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function deleteUser(u: ApiUser) {
     if (u.isAdmin) {
@@ -331,8 +359,8 @@ export default function AdminUsers() {
                 onChange={(e) => setCreateCaptain(e.target.checked)}
               />
               Captain
-            </label>        
-
+            </label>     
+               
 
             <button style={styles.primary} type="submit" disabled={loading || tokenMissing}>
               Create
@@ -383,6 +411,9 @@ export default function AdminUsers() {
                 <th style={styles.th}>Phone</th>
                 <th style={styles.th}>Admin</th>
                 <th style={styles.th}>Gold</th>
+                <th style={styles.th}>Captain</th>
+                <th style={styles.th}>Technician</th>
+                <th style={styles.th}>Supervisor</th>
                 <th style={styles.th}>Actions</th>
               </tr>
             </thead>
@@ -397,6 +428,33 @@ export default function AdminUsers() {
                     <td style={styles.td}>{u.phone}</td>
                     <td style={styles.td}>{u.isAdmin ? "Yes" : "No"}</td>
                     <td style={styles.td}>{u.isGoldMember ? "Gold" : "Standard"}</td>
+                    <td style={styles.td}>{u.isCaptain ? "Yes" : "No"}</td>
+                    <td style={styles.td}>
+                      <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <input
+                          type="checkbox"
+                          checked={!!u.isTechnician}
+                          onChange={(e) =>
+                            updateRoles(u.id, { isTechnician: e.target.checked })
+                          }
+                          disabled={loading || tokenMissing}
+                        />
+                        <span>{u.isTechnician ? "Yes" : "No"}</span>
+                      </label>
+                    </td>
+                    <td style={styles.td}>
+                      <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <input
+                          type="checkbox"
+                          checked={!!u.isSupervisor}
+                          onChange={(e) =>
+                            updateRoles(u.id, { isSupervisor: e.target.checked })
+                          }
+                          disabled={loading || tokenMissing}
+                        />
+                        <span>{u.isSupervisor ? "Yes" : "No"}</span>
+                      </label>
+                    </td>
                     <td style={styles.td}>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <button
@@ -407,8 +465,10 @@ export default function AdminUsers() {
                         >
                           {u.isGoldMember ? "Demote" : "Promote"}
                         </button>
+
                         <button
-                          disabled={loading}
+                          style={styles.btn}
+                          disabled={loading || tokenMissing}
                           onClick={() => setCaptain(u, !u.isCaptain)}
                         >
                           {u.isCaptain ? "Captain ✅" : "Captain"}
@@ -430,7 +490,7 @@ export default function AdminUsers() {
 
               {!loading && users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
+                  <td colSpan={8} style={{ padding: 12, opacity: 0.7 }}>
                     No users found.
                   </td>
                 </tr>
