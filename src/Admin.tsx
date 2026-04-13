@@ -3,7 +3,6 @@ import AdminUsers from "./admin/AdminUsers";
 import AdminMaintenance from "./admin/AdminMaintenance";
 import SupervisorMaintenance from "./supervisor/SupervisorMaintenance";
 
-
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
@@ -19,19 +18,19 @@ type ReservationStatus =
   | "OPEN"
   | string;
 
-type Captain = { 
-  id: string; 
-  firstName?: string | null; 
-  lastName?: string | null; 
-  email: string };
-
+type Captain = {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+};
 
 type AdminReservation = {
   id: string;
   boatId: string;
   boatName: string;
-  startDate: string; // ISO
-  endExclusive: string; // ISO
+  startDate: string;
+  endExclusive: string;
   status: ReservationStatus;
 
   userId?: string | null;
@@ -63,6 +62,16 @@ type Boat = {
   price_per_day?: number | null;
 };
 
+type AdminPortalUser = {
+  role?: string;
+  isAdmin?: boolean;
+  isSupervisor?: boolean;
+  username?: string;
+  email?: string;
+  name?: string;
+  userId?: string;
+};
+
 function ymd(d: Date) {
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -85,7 +94,9 @@ function calendarCellLabel(r?: AdminReservation) {
 
   if (r.captainId) {
     const captainName =
-      `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() || r.captainEmail || "Captain";
+      `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() ||
+      r.captainEmail ||
+      "Captain";
     return captainName;
   }
 
@@ -118,8 +129,6 @@ function formatPaidAt(value?: string | null) {
 
 function formatReservationRange(startIso: string, endExclusiveIso: string) {
   const start = parseIsoLocal(startIso);
-
-  // endExclusive is the first FREE day, so display the previous day
   const visibleEnd = addDays(parseIsoLocal(endExclusiveIso), -1);
 
   const startText = start.toLocaleDateString();
@@ -144,14 +153,12 @@ async function fetchJson(url: string, init?: RequestInit) {
   return data as any;
 }
 
-
 function dateKey(d: Date) {
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
-
 
 function overlapsDay(startIso: string, endIso: string, day: Date) {
   const dayStart = new Date(day);
@@ -182,38 +189,18 @@ function statusCellStyle(r?: AdminReservation): React.CSSProperties {
 
   const status = String(r.status || "").toUpperCase();
 
-  if (status === "BLOCKED") {
-    return { background: "#111827", color: "white" };
-  }
-
-  if (status === "MAINTENANCE") {
-    return { background: "#f59e0b", color: "#111827" };
-  }
-
+  if (status === "BLOCKED") return { background: "#111827", color: "white" };
+  if (status === "MAINTENANCE") return { background: "#f59e0b", color: "#111827" };
   if (status === "DENIED" || status === "CANCELED" || status === "OPEN") {
     return { background: "#f3f4f6", color: "#111827" };
   }
-
-  if (r.isGoldMember) {
-    return { background: "#fbbf24", color: "#111827" };
-  }
-
-  if (r.captainId) {
-    return { background: "#86efac", color: "#111827" };
-  }
-
-  if (status === "APPROVED") {
-    return { background: "#dbeafe", color: "#111827" };
-  }
-
-  if (status === "PENDING") {
-    return { background: "#fef3c7", color: "#111827" };
-  }
+  if (r.isGoldMember) return { background: "#fbbf24", color: "#111827" };
+  if (r.captainId) return { background: "#86efac", color: "#111827" };
+  if (status === "APPROVED") return { background: "#dbeafe", color: "#111827" };
+  if (status === "PENDING") return { background: "#fef3c7", color: "#111827" };
 
   return { background: "#f3f4f6", color: "#111827" };
 }
-
-
 
 function AdminCalendarView({
   token,
@@ -222,7 +209,7 @@ function AdminCalendarView({
   apiBase,
 }: {
   token: string;
-  start: string; // yyyy-mm-dd
+  start: string;
   days: number;
   apiBase: string;
 }) {
@@ -239,18 +226,19 @@ function AdminCalendarView({
   );
 
   async function block(boatId: string, day: Date) {
-    const statusInput = prompt("Block status: BLOCKED, MAINTENANCE, or OPEN", "BLOCKED") || "BLOCKED";
+    const statusInput =
+      prompt("Block status: BLOCKED, MAINTENANCE, or OPEN", "BLOCKED") || "BLOCKED";
     const status = String(statusInput).toUpperCase();
-  
+
     if (!["BLOCKED", "MAINTENANCE", "OPEN"].includes(status)) {
       alert("Invalid status");
       return;
     }
-  
+
     const note = prompt("Block note (optional):") || "";
     const daysStr = prompt("How many days?", "1") || "1";
     const nDays = Math.max(1, Math.min(parseInt(daysStr, 10) || 1, 60));
-  
+
     try {
       await fetchJson(`${apiBase}/api/admin/blocks`, {
         method: "POST",
@@ -285,7 +273,6 @@ function AdminCalendarView({
     }
   }
 
-
   async function load() {
     setLoading(true);
     setErr("");
@@ -315,7 +302,6 @@ function AdminCalendarView({
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [start, days]);
 
   const cellMap = useMemo(() => {
@@ -323,7 +309,7 @@ function AdminCalendarView({
     for (const r of reservations) {
       const st = String(r.status).toUpperCase();
       if (st === "DENIED" || st === "CANCELED" || st === "OPEN") continue;
-    
+
       for (const day of dayList) {
         if (!overlapsDay(r.startDate, r.endExclusive, day)) continue;
         const key = `${r.boatId}|${dateKey(day)}`;
@@ -335,6 +321,7 @@ function AdminCalendarView({
     }
     return map;
   }, [reservations, dayList]);
+
   const filteredBoats = useMemo(() => {
     if (purposeFilter === "all") return boats;
     return boats.filter(
@@ -433,7 +420,9 @@ function AdminCalendarView({
                               ? `Gold Member: ${r.requesterName || "—"}`
                               : r.captainId
                               ? `Captain: ${
-                                  `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() || r.captainEmail || "—"
+                                  `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() ||
+                                  r.captainEmail ||
+                                  "—"
                                 }`
                               : ""
                           }\nRequester: ${r.requesterName || ""} ${r.requesterEmail || ""}`
@@ -459,21 +448,21 @@ function AdminCalendarView({
                       );
                     }}
                   >
-                  {r ? (
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 800,
-                        lineHeight: 1.15,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {label}
-                    </div>
-                  ) : (
-                    <div style={{ opacity: 0.25 }}> </div>
-                  )}
+                    {r ? (
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          lineHeight: 1.15,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {label}
+                      </div>
+                    ) : (
+                      <div style={{ opacity: 0.25 }}> </div>
+                    )}
                   </button>
                 );
               })}
@@ -661,26 +650,27 @@ export default function Admin() {
   const [error, setError] = useState("");
 
   const [boats, setBoats] = useState<Boat[]>([]);
+  const [adminUser, setAdminUser] = useState<AdminPortalUser | null>(null);
   const [editing, setEditing] = useState<AdminReservation | null>(null);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
-  
+
     return (items || [])
       .filter((r) => {
         const status = String(r.status).toUpperCase();
-  
+
         if (showPendingOnly && status !== "PENDING") return false;
         if (hideCanceled && status === "CANCELED") return false;
         if (hideDenied && status === "DENIED") return false;
         if (hideOpen && status === "OPEN") return false;
         if (hideBlocked && status === "BLOCKED") return false;
-  
+
         return true;
       })
       .filter((r) => {
         if (!s) return true;
-  
+
         const hay = [
           r.boatName,
           r.requesterName || "",
@@ -692,7 +682,7 @@ export default function Admin() {
         ]
           .join(" ")
           .toLowerCase();
-  
+
         return hay.includes(s);
       })
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
@@ -702,10 +692,15 @@ export default function Admin() {
     () => items.filter((r) => String(r.status).toUpperCase() === "PENDING").length,
     [items]
   );
-  
+
   const [captainOptions, setCaptainOptions] = useState<Record<string, Captain[]>>({});
   const [captainLoading, setCaptainLoading] = useState<Record<string, boolean>>({});
 
+  const canSeeCalendar = !!adminUser?.isAdmin;
+  const canSeeReservations = !!adminUser?.isAdmin;
+  const canSeeUsers = !!adminUser?.isAdmin;
+  const canSeeMaintenance = !!adminUser?.isAdmin;
+  const canSeeSupervisor = !!adminUser?.isSupervisor || !!adminUser?.isAdmin;
 
   function setAndStoreToken(t: string) {
     if (t) localStorage.setItem(TOKEN_KEY, t);
@@ -717,18 +712,27 @@ export default function Admin() {
     e?.preventDefault?.();
     setError("");
     setLoggingIn(true);
+
     try {
       const res = await fetch(`${API_BASE}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+
       const data = await safeJson(res);
       if (!res.ok || !(data as any)?.ok || !(data as any)?.token) {
         throw new Error((data as any)?.error || "Login failed");
       }
+
+      const user = ((data as any).user || null) as AdminPortalUser | null;
+
       setAndStoreToken((data as any).token);
+      setAdminUser(user);
       setPassword("");
+
+      if (user?.isAdmin) setView("calendar");
+      else if (user?.isSupervisor) setView("supervisor");
     } catch (e: any) {
       setError(e?.message || "Login failed");
     } finally {
@@ -737,32 +741,34 @@ export default function Admin() {
   }
 
   async function loadReservations(startArg = start, daysArg = days) {
-    if (!token) return;
+    if (!token || !canSeeReservations) return;
     setLoading(true);
     setError("");
+
     try {
       const url =
         `${API_BASE}/api/admin/reservations?start=${encodeURIComponent(startArg)}` +
         `&days=${encodeURIComponent(String(daysArg))}` +
         `&_=${Date.now()}`;
-  
+
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       });
-  
+
       const data = await safeJson(res);
-  
+
       if (!res.ok || !(data as any)?.ok) {
         throw new Error((data as any)?.error || `Failed to load (${res.status})`);
       }
-  
+
       setItems(Array.isArray((data as any).reservations) ? (data as any).reservations : []);
     } catch (e: any) {
       const msg = e?.message || "Failed to load reservations";
       setError(msg);
       if (String(msg).toLowerCase().includes("unauthorized")) {
         setAndStoreToken("");
+        setAdminUser(null);
         setItems([]);
       }
     } finally {
@@ -793,9 +799,10 @@ export default function Admin() {
   }
 
   async function act(id: string, action: "approve" | "deny") {
-    if (!token) return;
+    if (!token || !canSeeReservations) return;
     setBusyId(id);
     setError("");
+
     try {
       const res = await fetch(`${API_BASE}/api/admin/reservations/${id}/${action}`, {
         method: "POST",
@@ -816,12 +823,11 @@ export default function Admin() {
     }
   }
 
-  //let the admin change reservation status from list page
   async function changeReservationStatus(id: string, status: string) {
-    if (!token) return;
+    if (!token || !canSeeReservations) return;
     setBusyId(id);
     setError("");
-  
+
     try {
       const res = await fetch(`${API_BASE}/api/admin/reservations/${id}/status`, {
         method: "POST",
@@ -831,12 +837,12 @@ export default function Admin() {
         },
         body: JSON.stringify({ status }),
       });
-  
+
       const data = await safeJson(res);
       if (!res.ok || !(data as any)?.ok) {
         throw new Error((data as any)?.error || `Failed to update (${res.status})`);
       }
-  
+
       await loadReservations();
     } catch (e: any) {
       setError(e?.message || "Failed to update status");
@@ -844,38 +850,43 @@ export default function Admin() {
       setBusyId("");
     }
   }
-  
+
   function logout() {
     setAndStoreToken("");
+    setAdminUser(null);
     setItems([]);
     setError("");
   }
 
   async function loadAvailableCaptains(r: AdminReservation) {
-    if (!token) return;
+    if (!token || !canSeeReservations) return;
     const rid = r.id;
     setCaptainLoading((p) => ({ ...p, [rid]: true }));
     try {
       const url =
         `${API_BASE}/api/admin/captains/available?start=${encodeURIComponent(r.startDate.slice(0, 10))}` +
         `&end=${encodeURIComponent(r.endExclusive.slice(0, 10))}`;
-  
+
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       const data = await safeJson(res);
-      if (!res.ok || !data.ok) throw new Error(data.error || `Failed (${res.status})`);
-  
-      setCaptainOptions((p) => ({ ...p, [rid]: Array.isArray(data.captains) ? data.captains : [] }));
+      if (!res.ok || !(data as any)?.ok) throw new Error((data as any)?.error || `Failed (${res.status})`);
+
+      setCaptainOptions((p) => ({
+        ...p,
+        [rid]: Array.isArray((data as any).captains) ? (data as any).captains : [],
+      }));
     } catch (e: any) {
       setError(e?.message || "Failed to load captains");
     } finally {
       setCaptainLoading((p) => ({ ...p, [rid]: false }));
     }
   }
-  
+
   async function assignCaptain(reservationId: string, captainId: string | null) {
-    if (!token) return;
+    if (!token || !canSeeReservations) return;
     setBusyId(reservationId);
     setError("");
+
     try {
       const res = await fetch(`${API_BASE}/api/admin/reservations/${reservationId}/assign-captain`, {
         method: "POST",
@@ -885,16 +896,18 @@ export default function Admin() {
         },
         body: JSON.stringify({ captainId }),
       });
-  
+
       const data = await safeJson(res);
-      if (!res.ok || !data.ok) throw new Error(data.error || `Assign failed (${res.status})`);
-  
-      // refresh list item locally
+      if (!res.ok || !(data as any)?.ok) {
+        throw new Error((data as any)?.error || `Assign failed (${res.status})`);
+      }
+
       setItems((prev) =>
-        prev.map((x) => (x.id === reservationId ? { ...x, captainId: (data as any).reservation?.captainId ?? null } : x))
+        prev.map((x) =>
+          x.id === reservationId ? { ...x, captainId: (data as any).reservation?.captainId ?? null } : x
+        )
       );
-  
-      // Optional: reload reservations so captain name/email also updates from backend join
+
       await loadReservations();
     } catch (e: any) {
       setError(e?.message || "Assign failed");
@@ -902,12 +915,12 @@ export default function Admin() {
       setBusyId("");
     }
   }
-  
+
   async function updateReservation(
     id: string,
     payload: { boatId: string; startDate: string; durationDays: number }
   ) {
-    if (!token) return;
+    if (!token || !canSeeReservations) return;
 
     setBusyId(id);
     setError("");
@@ -938,20 +951,20 @@ export default function Admin() {
   }
 
   async function refundReservation(id: string) {
-    if (!token) return;
-  
+    if (!token || !canSeeReservations) return;
+
     const input = prompt("Refund percentage (1-100)", "100");
     if (!input) return;
-  
+
     const percent = Number(input);
     if (!Number.isFinite(percent) || percent <= 0 || percent > 100) {
       alert("Invalid percentage");
       return;
     }
-  
+
     setBusyId(id);
     setError("");
-  
+
     try {
       const res = await fetch(`${API_BASE}/api/admin/reservations/${id}/refund`, {
         method: "POST",
@@ -961,14 +974,14 @@ export default function Admin() {
         },
         body: JSON.stringify({ percent }),
       });
-  
+
       const data = await safeJson(res);
-  
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Refund failed");
+
+      if (!res.ok || !(data as any)?.ok) {
+        throw new Error((data as any)?.error || "Refund failed");
       }
-  
-      alert(`Refunded $${Number(data.refundedNow || 0).toFixed(2)}`);
+
+      alert(`Refunded $${Number((data as any).refundedNow || 0).toFixed(2)}`);
       await loadReservations();
     } catch (e: any) {
       alert(e?.message || "Refund failed");
@@ -978,15 +991,24 @@ export default function Admin() {
   }
 
   useEffect(() => {
-    if (!token) return;
-    if (view !== "list") return;
+    if (!token || !adminUser) return;
+    if (view !== "list" || !canSeeReservations) return;
 
     loadReservations();
     loadBoats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, view, start, days]);
+  }, [token, adminUser, view, start, days]);
 
-  const showFilters = token && view !== "users"; // users page has its own filters UI
+  useEffect(() => {
+    if (!adminUser) return;
+
+    if (!adminUser.isAdmin && adminUser.isSupervisor && view !== "supervisor") {
+      setView("supervisor");
+    }
+  }, [adminUser, view]);
+
+  const showFilters =
+    token &&
+    ((view === "list" && canSeeReservations) || (view === "calendar" && canSeeCalendar));
 
   return (
     <div style={styles.page}>
@@ -995,32 +1017,62 @@ export default function Admin() {
           <div style={styles.h1}>Admin — Bluewater Scheduler</div>
           <div style={styles.sub}>
             API: <code style={styles.code}>{API_BASE}</code>
+            {adminUser ? (
+              <>
+                {" "}· Signed in as{" "}
+                <b>{adminUser.name || adminUser.email || adminUser.username || "User"}</b>
+                {" "}· Role: <b>{adminUser.isAdmin ? "Admin" : adminUser.isSupervisor ? "Supervisor" : "Unknown"}</b>
+              </>
+            ) : null}
           </div>
         </div>
 
         {token ? (
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <button style={styles.btn} onClick={() => setView("calendar")} disabled={view === "calendar"}>
-              Calendar
-            </button>
-            <button style={styles.btn} onClick={() => setView("list")} disabled={view === "list"}>
-              Reservations
-            </button>
-            <button style={styles.btn} onClick={() => setView("users")} disabled={view === "users"}>
-              Users
-            </button>
-            <button style={styles.btn} onClick={() => setView("maintenance")} disabled={view === "maintenance"}>
-              Maintenance
-            </button>
-            <button onClick={() => setView("supervisor")}>Supervisor</button>
-            
+            {canSeeCalendar ? (
+              <button style={styles.btn} onClick={() => setView("calendar")} disabled={view === "calendar"}>
+                Calendar
+              </button>
+            ) : null}
+
+            {canSeeReservations ? (
+              <button style={styles.btn} onClick={() => setView("list")} disabled={view === "list"}>
+                Reservations
+              </button>
+            ) : null}
+
+            {canSeeUsers ? (
+              <button style={styles.btn} onClick={() => setView("users")} disabled={view === "users"}>
+                Users
+              </button>
+            ) : null}
+
+            {canSeeMaintenance ? (
+              <button
+                style={styles.btn}
+                onClick={() => setView("maintenance")}
+                disabled={view === "maintenance"}
+              >
+                Maintenance
+              </button>
+            ) : null}
+
+            {canSeeSupervisor ? (
+              <button
+                style={styles.btn}
+                onClick={() => setView("supervisor")}
+                disabled={view === "supervisor"}
+              >
+                Supervisor
+              </button>
+            ) : null}
+
             <button
               style={styles.btn}
               onClick={() => {
-                // Refresh should only hit reservations endpoints when relevant
-                if (view === "list") loadReservations();
+                if (view === "list" && canSeeReservations) loadReservations();
               }}
-              disabled={loading || view !== "list"}
+              disabled={loading || view !== "list" || !canSeeReservations}
               title={view !== "list" ? "Refresh is for Reservations list" : "Reload reservations"}
             >
               {loading ? "Loading…" : "Refresh"}
@@ -1039,7 +1091,7 @@ export default function Admin() {
             <div style={{ fontWeight: 900, fontSize: 16 }}>Sign in</div>
 
             <label style={styles.label}>
-              <span>Username</span>
+              <span>Username or email</span>
               <input style={styles.input} value={username} onChange={(e) => setUsername(e.target.value)} />
             </label>
 
@@ -1075,7 +1127,7 @@ export default function Admin() {
                     onChange={(e) => {
                       const v = e.target.value;
                       setStart(v);
-                      if (view === "list" && token) loadReservations(v, days);
+                      if (view === "list" && token && canSeeReservations) loadReservations(v, days);
                     }}
                   />
                 </label>
@@ -1091,12 +1143,12 @@ export default function Admin() {
                     onChange={(e) => {
                       const n = Math.max(1, Math.min(Number(e.target.value) || 1, 60));
                       setDays(n);
-                      if (view === "list" && token) loadReservations(start, n);
+                      if (view === "list" && token && canSeeReservations) loadReservations(start, n);
                     }}
                   />
                 </label>
 
-                {view === "list" ? (
+                {view === "list" && canSeeReservations ? (
                   <>
                     <label style={{ ...styles.label, minWidth: 220 }}>
                       <span>Search</span>
@@ -1144,6 +1196,7 @@ export default function Admin() {
                         />
                         <span>Hide open</span>
                       </label>
+
                       <label style={styles.checkboxRow}>
                         <input
                           type="checkbox"
@@ -1169,16 +1222,15 @@ export default function Admin() {
             </section>
           ) : null}
 
-          {/* ✅ ONLY ONE render path for calendar, users, maintenance, and reservations */}
-          {view === "calendar" ? (
+          {view === "calendar" && canSeeCalendar ? (
             <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} />
-          ) : view === "users" ? (
+          ) : view === "users" && canSeeUsers ? (
             <AdminUsers />
-          ) : view === "supervisor" ? (
+          ) : view === "supervisor" && canSeeSupervisor ? (
             <SupervisorMaintenance />
-          ) : view === "maintenance" ? (
+          ) : view === "maintenance" && canSeeMaintenance ? (
             <AdminMaintenance />
-          ) : (
+          ) : view === "list" && canSeeReservations ? (
             <section style={{ marginTop: 14 }}>
               {loading ? (
                 <div style={{ opacity: 0.8 }}>Loading…</div>
@@ -1191,15 +1243,16 @@ export default function Admin() {
                     const canApprove = statusUpper === "PENDING";
                     const canDeny = ["PENDING", "APPROVED"].includes(statusUpper);
                     const isGold = !!r.isGoldMember;
-                    const showCaptainUI = !isGold && String(r.status).toUpperCase() !== "BLOCKED";
+                    const showCaptainUI = !isGold && statusUpper !== "BLOCKED";
                     const captainLabel =
                       `${r.captainFirstName || ""} ${r.captainLastName || ""}`.trim() || r.captainEmail || "";
+
                     return (
                       <div key={r.id} style={styles.row}>
                         <div style={{ display: "grid", gap: 4 }}>
                           <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
                             <div style={{ fontWeight: 900 }}>{r.boatName}</div>
-                            <span style={styles.badge}>{String(r.status).toUpperCase()}</span>
+                            <span style={styles.badge}>{statusUpper}</span>
                           </div>
 
                           <div style={{ opacity: 0.85, fontSize: 13 }}>
@@ -1212,30 +1265,33 @@ export default function Admin() {
                               {r.requesterEmail ? `• ${r.requesterEmail}` : ""}
                             </span>
                           </div>
+
                           <div style={{ marginTop: 8, fontSize: 13, lineHeight: 1.5 }}>
-                          <div>
-                            Payment: <b>{r.paymentStatus || (r.isGoldMember ? "Payment offline" : "—")}</b>
-                          </div>
-                          <div>
-                            Amount: <b>{r.amountPaid != null ? formatMoney(r.amountPaid) : "—"}</b>
-                          </div>
-                          <div>
-                            Paid at: <b>{r.paidAt ? formatPaidAt(r.paidAt) : "—"}</b>
-                          </div>
-                          {(r.refundedAmount != null || r.refundedAt || r.refundStatus) ? (
-                            <div style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5 }}>
-                              <div>
-                                Refund status: <b>{r.refundStatus || "—"}</b>
-                              </div>
-                              <div>
-                                Refunded amount: <b>{r.refundedAmount != null ? formatMoney(r.refundedAmount) : "—"}</b>
-                              </div>
-                              <div>
-                                Refunded at: <b>{r.refundedAt ? formatPaidAt(r.refundedAt) : "—"}</b>
-                              </div>
+                            <div>
+                              Payment: <b>{r.paymentStatus || (r.isGoldMember ? "Payment offline" : "—")}</b>
                             </div>
-                          ) : null}
-                        </div>
+                            <div>
+                              Amount: <b>{r.amountPaid != null ? formatMoney(r.amountPaid) : "—"}</b>
+                            </div>
+                            <div>
+                              Paid at: <b>{r.paidAt ? formatPaidAt(r.paidAt) : "—"}</b>
+                            </div>
+
+                            {r.refundedAmount != null || r.refundedAt || r.refundStatus ? (
+                              <div style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5 }}>
+                                <div>
+                                  Refund status: <b>{r.refundStatus || "—"}</b>
+                                </div>
+                                <div>
+                                  Refunded amount: <b>{r.refundedAmount != null ? formatMoney(r.refundedAmount) : "—"}</b>
+                                </div>
+                                <div>
+                                  Refunded at: <b>{r.refundedAt ? formatPaidAt(r.refundedAt) : "—"}</b>
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+
                           {showCaptainUI ? (
                             <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                               <div style={{ fontSize: 12, opacity: 0.75 }}>
@@ -1282,6 +1338,7 @@ export default function Admin() {
                               Gold Member: captain not required.
                             </div>
                           ) : null}
+
                           <div style={{ opacity: 0.5, fontSize: 12 }}>
                             <span style={{ fontFamily: "ui-monospace, Menlo, Monaco, Consolas, monospace" }}>
                               {r.id}
@@ -1313,56 +1370,62 @@ export default function Admin() {
                           >
                             Deny
                           </button>
-                          {["DENIED", "CANCELED"].includes(String(r.status).toUpperCase()) &&
-                            ["PAID", "PARTIALLY_REFUNDED"].includes(String(r.paymentStatus || "").toUpperCase()) && (
-                              <button
-                                style={styles.btn}
-                                disabled={busyId === r.id}
-                                onClick={() => refundReservation(r.id)}
-                              >
-                                Refund
-                              </button>
-                            )}
+
+                          {["DENIED", "CANCELED"].includes(statusUpper) &&
+                          ["PAID", "PARTIALLY_REFUNDED"].includes(String(r.paymentStatus || "").toUpperCase()) ? (
+                            <button
+                              style={styles.btn}
+                              disabled={busyId === r.id}
+                              onClick={() => refundReservation(r.id)}
+                            >
+                              Refund
+                            </button>
+                          ) : null}
                         </div>
 
-                        {["DENIED", "CANCELED"].includes(String(r.status).toUpperCase()) ? (
-                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                          <button
-                            style={styles.btn}
-                            disabled={busyId === r.id}
-                            onClick={() => changeReservationStatus(r.id, "OPEN")}
-                          >
-                            Set Open
-                          </button>
-                          <button
-                            style={styles.btn}
-                            disabled={busyId === r.id}
-                            onClick={() => changeReservationStatus(r.id, "BLOCKED")}
-                          >
-                            Set Blocked
-                          </button>
-                        </div>
-                      ) : null}
+                        {["DENIED", "CANCELED"].includes(statusUpper) ? (
+                          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                            <button
+                              style={styles.btn}
+                              disabled={busyId === r.id}
+                              onClick={() => changeReservationStatus(r.id, "OPEN")}
+                            >
+                              Set Open
+                            </button>
+                            <button
+                              style={styles.btn}
+                              disabled={busyId === r.id}
+                              onClick={() => changeReservationStatus(r.id, "BLOCKED")}
+                            >
+                              Set Blocked
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                     );
                   })}
                 </div>
               )}
             </section>
+          ) : (
+            <div style={{ marginTop: 14, opacity: 0.75 }}>
+              You do not have access to this section.
+            </div>
           )}
         </>
       )}
-            <EditReservationModal
-              open={!!editing}
-              reservation={editing}
-              boats={boats}
-              saving={busyId === editing?.id}
-              onClose={() => setEditing(null)}
-              onSave={(payload) => {
-                if (!editing) return Promise.resolve();
-                return updateReservation(editing.id, payload);
-              }}
-            />
+
+      <EditReservationModal
+        open={!!editing}
+        reservation={editing}
+        boats={boats}
+        saving={busyId === editing?.id}
+        onClose={() => setEditing(null)}
+        onSave={(payload) => {
+          if (!editing) return Promise.resolve();
+          return updateReservation(editing.id, payload);
+        }}
+      />
     </div>
   );
 }
@@ -1431,6 +1494,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: "#111827",
     color: "white",
     cursor: "pointer",
+    fontWeight: 700,
   },
 
   error: { padding: 12, borderRadius: 12, background: "#fee2e2", color: "#7f1d1d" },
@@ -1442,6 +1506,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: "white",
   },
 };
+
 const modalStyles: Record<string, React.CSSProperties> = {
   overlay: {
     position: "fixed",
@@ -1474,4 +1539,3 @@ const modalStyles: Record<string, React.CSSProperties> = {
     background: "#f9fafb",
   },
 };
-
