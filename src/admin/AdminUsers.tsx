@@ -491,7 +491,7 @@ export default function AdminUsers() {
 
               {!loading && users.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: 12, opacity: 0.7 }}>
+                  <td colSpan={9} style={{ padding: 12, opacity: 0.7 }}>
                     No users found.
                   </td>
                 </tr>
