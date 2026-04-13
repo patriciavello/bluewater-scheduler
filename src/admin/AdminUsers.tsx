@@ -229,6 +229,7 @@ export default function AdminUsers() {
       });
   
       const data = await safeJson(res);
+  
       if (!res.ok || !(data as any)?.ok) {
         throw new Error((data as any)?.error || "Failed to update roles");
       }
