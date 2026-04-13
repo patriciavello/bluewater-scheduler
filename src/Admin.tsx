@@ -696,7 +696,7 @@ export default function Admin() {
   const [captainOptions, setCaptainOptions] = useState<Record<string, Captain[]>>({});
   const [captainLoading, setCaptainLoading] = useState<Record<string, boolean>>({});
 
-  const canSeeCalendar = !!adminUser?.isAdmin;
+  const canSeeCalendar = !!adminUser?.isAdmin || !!adminUser?.isSupervisor;
   const canSeeReservations = !!adminUser?.isAdmin;
   const canSeeUsers = !!adminUser?.isAdmin;
   const canSeeMaintenance = !!adminUser?.isAdmin;
