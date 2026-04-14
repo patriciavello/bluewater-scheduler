@@ -1229,7 +1229,7 @@ export default function Admin() {
           ) : null}
 
           {view === "calendar" && canSeeCalendar ? (
-            <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} />
+            <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} canEdit={false} />
           ) : view === "users" && canSeeUsers ? (
             <AdminUsers />
           ) : view === "supervisor" && canSeeSupervisor ? (
