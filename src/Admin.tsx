@@ -1004,13 +1004,6 @@ export default function Admin() {
     loadBoats();
   }, [token, adminUser, view, start, days]);
 
-  useEffect(() => {
-    if (!adminUser) return;
-
-    if (!adminUser.isAdmin && adminUser.isSupervisor && view !== "supervisor") {
-      setView("supervisor");
-    }
-  }, [adminUser, view]);
 
   const showFilters =
     token &&
