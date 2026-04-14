@@ -207,11 +207,13 @@ function AdminCalendarView({
   start,
   days,
   apiBase,
+  canEdit,
 }: {
   token: string;
   start: string;
   days: number;
   apiBase: string;
+  canEdit: boolean;
 }) {
   const [boats, setBoats] = useState<Boat[]>([]);
   const [reservations, setReservations] = useState<AdminReservation[]>([]);
@@ -429,23 +431,27 @@ function AdminCalendarView({
                         : "Click to block"
                     }
                     onClick={() => {
-                      if (!r) return block(boat.id, d);
-
-                      const st = String(r.status).toUpperCase();
-                      if (st === "BLOCKED") return unblock(r.id);
-
-                      alert(
-                        `${boat.name}\n\n` +
-                          `${formatReservationRange(r.startDate, r.endExclusive)}\n` +
-                          `Status: ${st}\n` +
-                          `Payment: ${r.paymentStatus || (r.isGoldMember ? "Payment offline" : "—")}\n` +
-                          `Amount: ${r.amountPaid != null ? formatMoney(r.amountPaid) : "—"}\n` +
-                          `Paid at: ${r.paidAt ? formatPaidAt(r.paidAt) : "—"}\n\n` +
-                          `Requester: ${r.requesterName || "—"}\n` +
-                          `Email: ${r.requesterEmail || "—"}\n\n` +
-                          `Notes: ${r.notes || "—"}\n\n` +
-                          `ID: ${r.id}`
-                      );
+                      const st = r ? String(r.status).toUpperCase() : "";
+                    
+                      if (canEdit) {
+                        if (!r) return block(boat.id, d);
+                        if (st === "BLOCKED") return unblock(r.id);
+                      }
+                    
+                      if (r) {
+                        alert(
+                          `${boat.name}\n\n` +
+                            `${formatReservationRange(r.startDate, r.endExclusive)}\n` +
+                            `Status: ${st}\n` +
+                            `Payment: ${r.paymentStatus || (r.isGoldMember ? "Payment offline" : "—")}\n` +
+                            `Amount: ${r.amountPaid != null ? formatMoney(r.amountPaid) : "—"}\n` +
+                            `Paid at: ${r.paidAt ? formatPaidAt(r.paidAt) : "—"}\n\n` +
+                            `Requester: ${r.requesterName || "—"}\n` +
+                            `Email: ${r.requesterEmail || "—"}\n\n` +
+                            `Notes: ${r.notes || "—"}\n\n` +
+                            `ID: ${r.id}`
+                        );
+                      }
                     }}
                   >
                     {r ? (
