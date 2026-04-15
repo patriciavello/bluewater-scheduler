@@ -1344,7 +1344,7 @@ export default function Admin() {
             <SupervisorMaintenance />
           ) : view === "boats" && canSeeBoats ? (
             <BoatsPage />
-          ) :view === "maintenance" && canSeeMaintenance ? (
+          ) : view === "maintenance" && canSeeMaintenance ? (
             <AdminMaintenance />
           ) : view === "list" && canSeeReservations ? (
             <section style={{ marginTop: 14 }}>
