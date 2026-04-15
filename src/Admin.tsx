@@ -7,6 +7,8 @@ const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
 
 const TOKEN_KEY = "ADMIN_JWT";
+const USER_KEY = "ADMIN_PORTAL_USER";
+const VIEW_KEY = "ADMIN_PORTAL_VIEW";
 
 type ReservationStatus =
   | "PENDING"
@@ -650,7 +652,19 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor">("calendar");
+  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor">(() => {
+    const saved = localStorage.getItem(VIEW_KEY);
+    if (
+      saved === "calendar" ||
+      saved === "list" ||
+      saved === "users" ||
+      saved === "maintenance" ||
+      saved === "supervisor"
+    ) {
+      return saved;
+    }
+    return "calendar";
+  });
 
   const [start, setStart] = useState(() => ymd(new Date()));
   const [days, setDays] = useState(14);
@@ -667,7 +681,16 @@ export default function Admin() {
   const [error, setError] = useState("");
 
   const [boats, setBoats] = useState<Boat[]>([]);
-  const [adminUser, setAdminUser] = useState<AdminPortalUser | null>(null);
+
+  const [adminUser, setAdminUser] = useState<AdminPortalUser | null>(() => {
+    try {
+      const raw = localStorage.getItem(USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [editing, setEditing] = useState<AdminReservation | null>(null);
 
   const filtered = useMemo(() => {
@@ -725,6 +748,11 @@ export default function Admin() {
     setToken(t);
   }
 
+  function setAndStoreView(nextView: "calendar" | "list" | "users" | "maintenance" | "supervisor") {
+  localStorage.setItem(VIEW_KEY, nextView);
+  setView(nextView);
+}
+
   async function login(e?: React.FormEvent) {
     e?.preventDefault?.();
     setError("");
@@ -748,7 +776,7 @@ export default function Admin() {
       setAdminUser(user);
       setPassword("");
 
-      if (user?.isAdmin) setView("calendar");
+      if (user?.isAdmin) setAndStoreView("calendar");
       else if (user?.isSupervisor) setView("supervisor");
     } catch (e: any) {
       setError(e?.message || "Login failed");
@@ -870,7 +898,10 @@ export default function Admin() {
 
   function logout() {
     setAndStoreToken("");
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(VIEW_KEY);
     setAdminUser(null);
+    setView("calendar");
     setItems([]);
     setError("");
   }
@@ -1010,6 +1041,7 @@ export default function Admin() {
   //restores adminUser from the token
   useEffect(() => {
     if (!token) {
+      localStorage.removeItem(USER_KEY);
       setAdminUser(null);
       return;
     }
@@ -1025,7 +1057,10 @@ export default function Admin() {
         username: payload.username,
         email: payload.email,
         userId: payload.userId,
+        name: payload.name,
       };
+
+      localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
 
       if (
         prev &&
@@ -1034,7 +1069,8 @@ export default function Admin() {
         prev.isSupervisor === nextUser.isSupervisor &&
         prev.username === nextUser.username &&
         prev.email === nextUser.email &&
-        prev.userId === nextUser.userId
+        prev.userId === nextUser.userId &&
+        prev.name === nextUser.name
       ) {
         return prev;
       }
@@ -1051,7 +1087,7 @@ export default function Admin() {
     if (!supervisorOnly) return;
 
     if (view === "list" || view === "users" || view === "maintenance") {
-      setView("supervisor");
+      setAndStoreView("supervisor");
     }
   }, [adminUser, view]);
 
@@ -1089,19 +1125,19 @@ export default function Admin() {
         {token ? (
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             {canSeeCalendar ? (
-              <button style={styles.btn} onClick={() => setView("calendar")} disabled={view === "calendar"}>
+              <button style={styles.btn} onClick={() => setAndStoreView("calendar")} disabled={view === "calendar"}>
                 Calendar
               </button>
             ) : null}
 
             {canSeeReservations ? (
-              <button style={styles.btn} onClick={() => setView("list")} disabled={view === "list"}>
+              <button style={styles.btn} onClick={() => setAndStoreView("list")} disabled={view === "list"}>
                 Reservations
               </button>
             ) : null}
 
             {canSeeUsers ? (
-              <button style={styles.btn} onClick={() => setView("users")} disabled={view === "users"}>
+              <button style={styles.btn} onClick={() => setAndStoreView("users")} disabled={view === "users"}>
                 Users
               </button>
             ) : null}
@@ -1109,7 +1145,7 @@ export default function Admin() {
             {canSeeMaintenance ? (
               <button
                 style={styles.btn}
-                onClick={() => setView("maintenance")}
+                onClick={() => setAndStoreView("maintenance")}
                 disabled={view === "maintenance"}
               >
                 Maintenance
@@ -1119,7 +1155,7 @@ export default function Admin() {
             {canSeeSupervisor ? (
               <button
                 style={styles.btn}
-                onClick={() => setView("supervisor")}
+                onClick={() => setAndStoreView("supervisor")}
                 disabled={view === "supervisor"}
               >
                 Supervisor
@@ -1282,7 +1318,13 @@ export default function Admin() {
           ) : null}
 
           {view === "calendar" && canSeeCalendar ? (
-            <AdminCalendarView token={token} start={start} days={days} apiBase={API_BASE} canEdit={!!adminUser?.isAdmin} />
+            <AdminCalendarView 
+              token={token} 
+              start={start} 
+              days={days} 
+              apiBase={API_BASE} 
+              canEdit={!!adminUser?.isAdmin || !!adminUser?.isSupervisor} 
+            />
           ) : view === "users" && canSeeUsers ? (
             <AdminUsers />
           ) : view === "supervisor" && canSeeSupervisor ? (
@@ -1471,10 +1513,10 @@ export default function Admin() {
                 You do not have access to this section.
                 {adminUser?.isSupervisor && !adminUser?.isAdmin ? (
                   <div style={{ marginTop: 10 }}>
-                    <button style={styles.btn} onClick={() => setView("supervisor")}>
+                    <button style={styles.btn} onClick={() => setAndStoreView("supervisor")}>
                       Go to Supervisor
                     </button>
-                    <button style={{ ...styles.btn, marginLeft: 8 }} onClick={() => setView("calendar")}>
+                    <button style={{ ...styles.btn, marginLeft: 8 }} onClick={() => setAndStoreView("calendar")}>
                       Go to Calendar
                     </button>
                   </div>
