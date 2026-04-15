@@ -222,12 +222,14 @@ function AdminCalendarView({
   days,
   apiBase,
   canEdit,
+  isFullAdmin
 }: {
   token: string;
   start: string;
   days: number;
   apiBase: string;
   canEdit: boolean;
+  isFullAdmin: boolean;
 }) {
   const [boats, setBoats] = useState<Boat[]>([]);
   const [reservations, setReservations] = useState<AdminReservation[]>([]);
@@ -242,8 +244,9 @@ function AdminCalendarView({
   );
 
   async function block(boatId: string, day: Date) {
+    const defaultStatus = isFullAdmin ? "BLOCKED" : "MAINTENANCE";
     const statusInput =
-      prompt("Block status: BLOCKED, MAINTENANCE, or OPEN", "BLOCKED") || "BLOCKED";
+      prompt("Block status: BLOCKED, MAINTENANCE, or OPEN", defaultStatus) || defaultStatus;
     const status = String(statusInput).toUpperCase();
 
     if (!["BLOCKED", "MAINTENANCE", "OPEN"].includes(status)) {
@@ -1338,6 +1341,7 @@ export default function Admin() {
               days={days} 
               apiBase={API_BASE} 
               canEdit={!!adminUser?.isAdmin || !!adminUser?.isSupervisor} 
+              isFullAdmin={!!adminUser?.isAdmin}
             />
           ) : view === "users" && canSeeUsers ? (
             <AdminUsers />
