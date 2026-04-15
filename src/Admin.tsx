@@ -172,6 +172,17 @@ function overlapsDay(startIso: string, endIso: string, day: Date) {
   return s < dayEnd && e > dayStart;
 }
 
+function parseJwt(token: string) {
+  try {
+    const base64 = token.split(".")[1];
+    if (!base64) return null;
+    const json = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 function statusPriority(s: string) {
   const u = String(s).toUpperCase();
   if (u === "BLOCKED") return 50;
@@ -997,6 +1008,39 @@ export default function Admin() {
   }
 
   useEffect(() => {
+    if (!token) {
+      setAdminUser(null);
+      return;
+    }
+  
+    if (adminUser) return;
+  
+    const payload = parseJwt(token);
+    if (!payload) return;
+  
+    setAdminUser({
+      role: payload.role,
+      isAdmin: !!payload.isAdmin || payload.role === "admin",
+      isSupervisor: !!payload.isSupervisor || payload.role === "supervisor",
+      username: payload.username,
+      email: payload.email,
+      userId: payload.userId,
+    });
+  }, [token, adminUser]);
+
+  useEffect(() => {
+    if (!adminUser) return;
+  
+    const supervisorOnly = !adminUser.isAdmin && adminUser.isSupervisor;
+  
+    if (!supervisorOnly) return;
+  
+    if (view === "list" || view === "users" || view === "maintenance") {
+      setView("supervisor");
+    }
+  }, [adminUser, view]);
+
+  useEffect(() => {
     if (!token || !adminUser) return;
     if (view !== "list" || !canSeeReservations) return;
 
@@ -1407,9 +1451,19 @@ export default function Admin() {
               )}
             </section>
           ) : (
-            <div style={{ marginTop: 14, opacity: 0.75 }}>
-              You do not have access to this section.
-            </div>
+              <div style={{ marginTop: 14, opacity: 0.75 }}>
+                You do not have access to this section.
+                {adminUser?.isSupervisor && !adminUser?.isAdmin ? (
+                  <div style={{ marginTop: 10 }}>
+                    <button style={styles.btn} onClick={() => setView("supervisor")}>
+                      Go to Supervisor
+                    </button>
+                    <button style={{ ...styles.btn, marginLeft: 8 }} onClick={() => setView("calendar")}>
+                      Go to Calendar
+                    </button>
+                  </div>
+                ) : null}
+              </div>
           )}
         </>
       )}
