@@ -1007,27 +1007,39 @@ export default function Admin() {
     }
   }
 
+  //restores adminUser from the token
   useEffect(() => {
     if (!token) {
       setAdminUser(null);
       return;
     }
   
-    if (adminUser) return;
-  
     const payload = parseJwt(token);
     if (!payload) return;
   
-    setAdminUser({
-      role: payload.role,
-      isAdmin: !!payload.isAdmin || payload.role === "admin",
-      isSupervisor: !!payload.isSupervisor || payload.role === "supervisor",
-      username: payload.username,
-      email: payload.email,
-      userId: payload.userId,
+    setAdminUser((prev) => {
+      if (
+        prev &&
+        prev.role === payload.role &&
+        prev.userId === payload.userId &&
+        prev.email === payload.email &&
+        prev.username === payload.username
+      ) {
+        return prev;
+      }
+  
+      return {
+        role: payload.role,
+        isAdmin: !!payload.isAdmin || payload.role === "admin",
+        isSupervisor: !!payload.isSupervisor || payload.role === "supervisor",
+        username: payload.username,
+        email: payload.email,
+        userId: payload.userId,
+      };
     });
-  }, [token, adminUser]);
+  }, [token]);
 
+  //redirects supervisor away from forbidden views
   useEffect(() => {
     if (!adminUser) return;
   
@@ -1040,6 +1052,7 @@ export default function Admin() {
     }
   }, [adminUser, view]);
 
+ // loads reservation data only when the current view is list
   useEffect(() => {
     if (!token || !adminUser) return;
     if (view !== "list" || !canSeeReservations) return;
