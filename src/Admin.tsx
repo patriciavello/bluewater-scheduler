@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AdminUsers from "./admin/AdminUsers";
 import AdminMaintenance from "./admin/AdminMaintenance";
 import SupervisorMaintenance from "./supervisor/SupervisorMaintenance";
+import BoatsPage from "./admin/pages/BoatsPage";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -651,16 +652,17 @@ export default function Admin() {
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
+  
 
-  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor">(() => {
+  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor" | "boats">(() => {
     const saved = localStorage.getItem(VIEW_KEY);
     if (
       saved === "calendar" ||
       saved === "list" ||
       saved === "users" ||
       saved === "maintenance" ||
-      saved === "supervisor"
-    ) {
+      saved === "supervisor" ||
+      saved === "boats"  ) {
       return saved;
     }
     return "calendar";
@@ -674,7 +676,7 @@ export default function Admin() {
   const [hideOpen, setHideOpen] = useState(true);
   const [hideBlocked, setHideBlocked] = useState(true);
   const [search, setSearch] = useState("");
-
+  
   const [items, setItems] = useState<AdminReservation[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string>("");
@@ -741,6 +743,7 @@ export default function Admin() {
   const canSeeUsers = !!adminUser?.isAdmin;
   const canSeeMaintenance = !!adminUser?.isAdmin;
   const canSeeSupervisor = !!adminUser?.isSupervisor || !!adminUser?.isAdmin;
+  const canSeeBoats = !!adminUser?.isAdmin || !!adminUser?.isSupervisor;
 
   function setAndStoreToken(t: string) {
     if (t) localStorage.setItem(TOKEN_KEY, t);
@@ -1162,6 +1165,16 @@ export default function Admin() {
               </button>
             ) : null}
 
+            {canSeeBoats ? (
+              <button
+                style={styles.btn}
+                onClick={() => setAndStoreView("boats")}
+                disabled={view === "boats"}
+              >
+                Boats
+              </button>
+            ) : null}
+
             <button
               style={styles.btn}
               onClick={() => {
@@ -1329,7 +1342,9 @@ export default function Admin() {
             <AdminUsers />
           ) : view === "supervisor" && canSeeSupervisor ? (
             <SupervisorMaintenance />
-          ) : view === "maintenance" && canSeeMaintenance ? (
+          ) : view === "boats" && canSeeBoats ? (
+            <BoatsPage />
+          ) :view === "maintenance" && canSeeMaintenance ? (
             <AdminMaintenance />
           ) : view === "list" && canSeeReservations ? (
             <section style={{ marginTop: 14 }}>
