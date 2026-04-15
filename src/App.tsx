@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import SchedulerApp from "./SchedulerApp";
 import AdminRouter from "./admin/AdminRouter";
-import AdminLayout from "./admin/AdminLayout";
 import UserAccount from "./UserAccount";
 import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
 import PaymentSuccessPage from "./PaymentSuccessPage";
 import PaymentCancelledPage from "./PaymentCancelledPage";
 import MaintenanceRequest from "./MaintenanceRequest";
+import AdminLayout from "./admin/AdminLayout";
 
 export default function App() {
   return (

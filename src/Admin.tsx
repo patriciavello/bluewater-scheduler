@@ -777,6 +777,7 @@ export default function Admin() {
 
       setAndStoreToken((data as any).token);
       setAdminUser(user);
+      if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
       setPassword("");
 
       if (user?.isAdmin) setAndStoreView("calendar");
