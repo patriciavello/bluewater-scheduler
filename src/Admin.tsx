@@ -751,7 +751,7 @@ export default function Admin() {
     setToken(t);
   }
 
-  function setAndStoreView(nextView: "calendar" | "list" | "users" | "maintenance" | "supervisor") {
+  function setAndStoreView(nextView: "calendar" | "list" | "users" | "maintenance" | "supervisor" |"boats") {
   localStorage.setItem(VIEW_KEY, nextView);
   setView(nextView);
 }
