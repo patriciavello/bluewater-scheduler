@@ -1013,22 +1013,12 @@ export default function Admin() {
       setAdminUser(null);
       return;
     }
-  
+
     const payload = parseJwt(token);
     if (!payload) return;
-  
+
     setAdminUser((prev) => {
-      if (
-        prev &&
-        prev.role === payload.role &&
-        prev.userId === payload.userId &&
-        prev.email === payload.email &&
-        prev.username === payload.username
-      ) {
-        return prev;
-      }
-  
-      return {
+      const nextUser: AdminPortalUser = {
         role: payload.role,
         isAdmin: !!payload.isAdmin || payload.role === "admin",
         isSupervisor: !!payload.isSupervisor || payload.role === "supervisor",
@@ -1036,17 +1026,30 @@ export default function Admin() {
         email: payload.email,
         userId: payload.userId,
       };
+
+      if (
+        prev &&
+        prev.role === nextUser.role &&
+        prev.isAdmin === nextUser.isAdmin &&
+        prev.isSupervisor === nextUser.isSupervisor &&
+        prev.username === nextUser.username &&
+        prev.email === nextUser.email &&
+        prev.userId === nextUser.userId
+      ) {
+        return prev;
+      }
+
+      return nextUser;
     });
   }, [token]);
 
   //redirects supervisor away from forbidden views
   useEffect(() => {
     if (!adminUser) return;
-  
+
     const supervisorOnly = !adminUser.isAdmin && adminUser.isSupervisor;
-  
     if (!supervisorOnly) return;
-  
+
     if (view === "list" || view === "users" || view === "maintenance") {
       setView("supervisor");
     }
