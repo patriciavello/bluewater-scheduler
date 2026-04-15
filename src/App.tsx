@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import SchedulerApp from "./SchedulerApp";
-import AdminRouter from "./admin/AdminRouter";
 import UserAccount from "./UserAccount";
 import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
@@ -8,6 +7,7 @@ import PaymentSuccessPage from "./PaymentSuccessPage";
 import PaymentCancelledPage from "./PaymentCancelledPage";
 import MaintenanceRequest from "./MaintenanceRequest";
 import AdminLayout from "./admin/AdminLayout";
+import Admin from "./Admin";
 
 export default function App() {
   return (
@@ -20,7 +20,8 @@ export default function App() {
       <Route path="/payment-success" element={<PaymentSuccessPage />} />
       <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
       <Route path="/admin" element={<AdminLayout />}>
-       <Route path="*" element={<AdminRouter />} />
+        <Route index element={<Admin />} />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
 
       {/* fallback */}
