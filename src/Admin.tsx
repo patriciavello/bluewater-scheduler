@@ -777,7 +777,7 @@ export default function Admin() {
       setPassword("");
 
       if (user?.isAdmin) setAndStoreView("calendar");
-      else if (user?.isSupervisor) setView("supervisor");
+      else if (user?.isSupervisor) setAndStoreView("supervisor");
     } catch (e: any) {
       setError(e?.message || "Login failed");
     } finally {
