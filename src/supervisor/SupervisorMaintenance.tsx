@@ -151,7 +151,6 @@ export default function SupervisorMaintenance() {
             <div>Start</div>
             <div>End</div>
             <div>Status</div>
-            <div>Open</div>
           </div>
         </div>
 
@@ -227,7 +226,7 @@ export default function SupervisorMaintenance() {
             />
             </div>
 
-            <div>
+            <div style={{ display: "grid", gap: 6 }}>
               <select
                 style={styles.input}
                 value={i.status}
@@ -241,10 +240,9 @@ export default function SupervisorMaintenance() {
                 <option value="IN_PROGRESS">IN PROGRESS</option>
                 <option value="DONE">DONE</option>
               </select>
-            </div>
-            <div>
+
               <button
-                style={styles.input}
+                style={styles.openBtn}
                 onClick={() => navigate(`/technician/maintenance/${i.id}`)}
               >
                 Open
@@ -267,12 +265,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   headerRow: {
     display: "grid",
-    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 120px 100px",
+    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 140px",
     fontWeight: 800,
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 120px 100px",
+    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 140px",
     gap: 8,
     alignItems: "center",
   },
@@ -285,5 +283,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   tableWrap: {
   overflowX: "auto",
+},
+openBtn: {
+  width: "100%",
+  padding: 6,
+  border: "1px solid #cbd5e1",
+  borderRadius: 6,
+  background: "#fff",
+  cursor: "pointer",
 },
 };
