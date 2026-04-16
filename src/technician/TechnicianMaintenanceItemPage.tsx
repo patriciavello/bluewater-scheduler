@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 interface MaintenanceItem {
   id: string;
   title: string;
@@ -174,7 +176,7 @@ export default function TechnicianMaintenanceItemPage() {
     setSuccessMessage("");
 
     try {
-      const res = await fetch(`/api/technician/maintenance/items/${id}`, {
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}`, {
         method: "GET",
         credentials: "include",
       });
@@ -201,7 +203,7 @@ export default function TechnicianMaintenanceItemPage() {
     setSuccessMessage("");
 
     try {
-      const res = await fetch(`/api/technician/maintenance/items/${id}/start`, {
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/start`, {
         method: "POST",
         credentials: "include",
       });
@@ -232,7 +234,7 @@ export default function TechnicianMaintenanceItemPage() {
     try {
       setSavingNote(true);
 
-      const res = await fetch(`/api/technician/maintenance/items/${id}/note`, {
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/note`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -273,7 +275,7 @@ export default function TechnicianMaintenanceItemPage() {
       setSavingScheduleRequest(true);
 
       const res = await fetch(
-        `/api/technician/maintenance/items/${id}/request-schedule-change`,
+        `${API_BASE}/api/technician/maintenance/items/${id}/request-schedule-change`,
         {
           method: "POST",
           headers: {
@@ -315,7 +317,7 @@ export default function TechnicianMaintenanceItemPage() {
     try {
       setSavingCompletion(true);
 
-      const res = await fetch(`/api/technician/maintenance/items/${id}/complete`, {
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/complete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
