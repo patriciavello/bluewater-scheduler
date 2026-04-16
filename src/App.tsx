@@ -8,8 +8,8 @@ import PaymentCancelledPage from "./PaymentCancelledPage";
 import MaintenanceRequest from "./MaintenanceRequest";
 import AdminLayout from "./admin/AdminLayout";
 import Admin from "./Admin";
-import TechnicianMaintenanceItemPage from "./technician/TechnicianMaintenanceItemPage";
-import TechnicianMaintenanceListPage from "./technician/TechnicianMaintenanceListPage";
+import TechnicianMaintenanceItemPage from "./technician/TechnicianMaintenanceItemPage.tsx";
+import TechnicianMaintenanceListPage from "./technician/TechnicianMaintenanceListPage.tsx";
 
 export default function App() {
   return (
