@@ -3,6 +3,27 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
+function getAuthHeaders(): Record<string, string> {
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("adminToken") ||
+    localStorage.getItem("authToken") ||
+    sessionStorage.getItem("token") ||
+    sessionStorage.getItem("adminToken") ||
+    sessionStorage.getItem("authToken");
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 interface MaintenanceItem {
   id: string;
   title: string;
@@ -179,6 +200,7 @@ export default function TechnicianMaintenanceItemPage() {
       const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}`, {
         method: "GET",
         credentials: "include",
+        headers: getAuthHeaders(),
       });
 
       const text = await res.text();

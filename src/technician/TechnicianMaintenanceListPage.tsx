@@ -3,6 +3,27 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 
+function getAuthHeaders(): Record<string, string> {
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("adminToken") ||
+    localStorage.getItem("authToken") ||
+    sessionStorage.getItem("token") ||
+    sessionStorage.getItem("adminToken") ||
+    sessionStorage.getItem("authToken");
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 console.log("API_BASE:", API_BASE);
 
@@ -91,13 +112,42 @@ export default function TechnicianMaintenanceListPage() {
       console.log("API_BASE:", API_BASE);
       console.log("Fetching from:", `${API_BASE}/api/technician/maintenance/items`);
       
-      const res = await fetch(`${API_BASE}/api/technician/maintenance/items`, {
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}`, {
         method: "GET",
         credentials: "include",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
+      });
+
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/note`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({
+          message: note.trim(),
+        }),
+      });
+
+      const res = await fetch(
+        `${API_BASE}/api/technician/maintenance/items/${id}/request-schedule-change`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify({
+            requestedStartDate: requestedStartDate || null,
+            requestedEndDate: requestedEndDate || null,
+            justification: scheduleJustification.trim(),
+          }),
+        }
+      );
+
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/complete`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({
+          completionNote: completionNote.trim() || null,
+        }),
       });
 
       console.log("Response status:", res.status);
