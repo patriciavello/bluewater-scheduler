@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -44,6 +45,7 @@ export default function SupervisorMaintenance() {
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
   const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadItems();
@@ -148,6 +150,7 @@ export default function SupervisorMaintenance() {
           <div>Start</div>
           <div>End</div>
           <div>Status</div>
+          
         </div>
 
         {items.map((i) => (
@@ -169,6 +172,14 @@ export default function SupervisorMaintenance() {
               }
               disabled={busyId === i.id}
             >
+            <div>
+              <button
+                style={styles.input}
+                onClick={() => navigate(`/technician/maintenance/${i.id}`)}
+              >
+                Open
+              </button>
+            </div>  
               <option value="">Select technician</option>
               {technicians.map((t) => {
                 const label =
@@ -253,12 +264,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   headerRow: {
     display: "grid",
-    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 120px",
+    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 120px 100px",
     fontWeight: 800,
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 120px",
+    gridTemplateColumns: "120px 1fr 80px 60px 100px 120px 120px 120px 120px 100px",
     gap: 8,
     alignItems: "center",
   },
