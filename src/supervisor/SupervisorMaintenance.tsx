@@ -172,14 +172,6 @@ export default function SupervisorMaintenance() {
               }
               disabled={busyId === i.id}
             >
-            <div>
-              <button
-                style={styles.input}
-                onClick={() => navigate(`/technician/maintenance/${i.id}`)}
-              >
-                Open
-              </button>
-            </div>  
               <option value="">Select technician</option>
               {technicians.map((t) => {
                 const label =
@@ -191,6 +183,14 @@ export default function SupervisorMaintenance() {
                 );
               })}
             </select>
+            <div>
+              <button
+                style={styles.input}
+                onClick={() => navigate(`/technician/maintenance/${i.id}`)}
+              >
+                Open
+              </button>
+            </div>  
             </div>
 
             <div>
