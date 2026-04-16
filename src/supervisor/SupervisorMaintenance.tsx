@@ -139,18 +139,20 @@ export default function SupervisorMaintenance() {
       {loading ? <div>Loading…</div> : null}
       {error ? <div style={styles.error}>{error}</div> : null}
 
-      <div style={styles.table}>
-        <div style={styles.headerRow}>
-          <div>Boat</div>
-          <div>Problem</div>
-          <div>Priority</div>
-          <div>Out</div>
-          <div>Fix By</div>
-          <div>Technician</div>
-          <div>Start</div>
-          <div>End</div>
-          <div>Status</div>
-          <div>Open</div>
+      <div style={styles.tableWrap}>
+        <div style={styles.table}>
+          <div style={styles.headerRow}>
+            <div>Boat</div>
+            <div>Problem</div>
+            <div>Priority</div>
+            <div>Out</div>
+            <div>Fix By</div>
+            <div>Technician</div>
+            <div>Start</div>
+            <div>End</div>
+            <div>Status</div>
+            <div>Open</div>
+          </div>
         </div>
 
         {items.map((i) => (
@@ -261,6 +263,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: "grid",
     gap: 8,
     marginTop: 16,
+    minWidth: 1100,
   },
   headerRow: {
     display: "grid",
@@ -280,4 +283,7 @@ const styles: Record<string, React.CSSProperties> = {
   error: {
     color: "red",
   },
+  tableWrap: {
+  overflowX: "auto",
+},
 };
