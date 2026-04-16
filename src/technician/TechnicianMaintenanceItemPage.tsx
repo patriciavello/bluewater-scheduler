@@ -181,7 +181,15 @@ export default function TechnicianMaintenanceItemPage() {
         credentials: "include",
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("technician items raw response:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Server returned non-JSON response: ${text.slice(0, 120)}`);
+      }
 
       if (!res.ok || !data.ok) {
         throw new Error(data?.error || "Failed to load maintenance item");

@@ -109,7 +109,15 @@ export default function TechnicianMaintenanceListPage() {
         throw new Error(`HTTP ${res.status}: ${text.substring(0, 200)}`);
       }
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("technician items raw response:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Server returned non-JSON response: ${text.slice(0, 120)}`);
+      }
       console.log("Response data:", data);
 
       if (!data.ok) {
