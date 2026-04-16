@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
+
+
 function getAuthHeaders(): Record<string, string> {
   const token =
     localStorage.getItem("token") ||
@@ -184,7 +186,8 @@ export default function TechnicianMaintenanceItemPage() {
   const [completionNote, setCompletionNote] = useState("");
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [savingCompletion, setSavingCompletion] = useState(false);
-
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  
   useEffect(() => {
     loadItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,6 +239,7 @@ export default function TechnicianMaintenanceItemPage() {
       const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/start`, {
         method: "POST",
         credentials: "include",
+        headers: getAuthHeaders(),
       });
 
       const data = await res.json();
@@ -266,9 +270,7 @@ export default function TechnicianMaintenanceItemPage() {
 
       const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/note`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({
           message: note.trim(),
@@ -308,9 +310,7 @@ export default function TechnicianMaintenanceItemPage() {
         `${API_BASE}/api/technician/maintenance/items/${id}/request-schedule-change`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: getAuthHeaders(),
           credentials: "include",
           body: JSON.stringify({
             requestedStartDate: requestedStartDate || null,
@@ -349,9 +349,7 @@ export default function TechnicianMaintenanceItemPage() {
 
       const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/complete`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify({
           completionNote: completionNote.trim() || null,
@@ -374,6 +372,51 @@ export default function TechnicianMaintenanceItemPage() {
       setSavingCompletion(false);
     }
   }
+
+  async function uploadPhoto(file: File) {
+  setActionError("");
+  setSuccessMessage("");
+
+  try {
+    setUploadingPhoto(true);
+
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("adminToken") ||
+      localStorage.getItem("authToken") ||
+      sessionStorage.getItem("token") ||
+      sessionStorage.getItem("adminToken") ||
+      sessionStorage.getItem("authToken");
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/photo`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data?.error || "Failed to upload photo");
+    }
+
+    setSuccessMessage("Photo uploaded.");
+    await loadItem();
+  } catch (err) {
+    setActionError((err as Error).message || "Failed to upload photo");
+  } finally {
+    setUploadingPhoto(false);
+  }
+}
 
   const canStart = item?.status === "ASSIGNED";
   const canAddProgress = item?.status === "ASSIGNED" || item?.status === "IN_PROGRESS" || item?.status === "WAITING_SUPERVISOR";
@@ -563,6 +606,31 @@ export default function TechnicianMaintenanceItemPage() {
             </button>
           )}
 
+          <label
+            style={{
+              ...styles.secondaryButton,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            {uploadingPhoto ? "Uploading..." : "Upload Photo"}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  uploadPhoto(file);
+                }
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
+
           {canComplete && (
             <button
               style={styles.successButton}
@@ -617,7 +685,7 @@ export default function TechnicianMaintenanceItemPage() {
             </button>
           </form>
         )}
-
+        
         {showCompleteForm && (
           <form onSubmit={submitComplete} style={styles.formBlock}>
             <h3 style={styles.subTitle}>Complete Item</h3>
