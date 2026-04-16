@@ -150,7 +150,7 @@ export default function SupervisorMaintenance() {
           <div>Start</div>
           <div>End</div>
           <div>Status</div>
-          
+          <div>Open</div>
         </div>
 
         {items.map((i) => (
@@ -183,14 +183,6 @@ export default function SupervisorMaintenance() {
                 );
               })}
             </select>
-            <div>
-              <button
-                style={styles.input}
-                onClick={() => navigate(`/technician/maintenance/${i.id}`)}
-              >
-                Open
-              </button>
-            </div>  
             </div>
 
             <div>
@@ -247,6 +239,14 @@ export default function SupervisorMaintenance() {
                 <option value="IN_PROGRESS">IN PROGRESS</option>
                 <option value="DONE">DONE</option>
               </select>
+            </div>
+            <div>
+              <button
+                style={styles.input}
+                onClick={() => navigate(`/technician/maintenance/${i.id}`)}
+              >
+                Open
+              </button>
             </div>
           </div>
         ))}
