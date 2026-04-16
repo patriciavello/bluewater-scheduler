@@ -1,7 +1,28 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function formatDate(value) {
+interface MaintenanceItem {
+  id: string;
+  title: string;
+  description: string;
+  problemDescription?: string;
+  status: string;
+  priority: string;
+  classification?: string;
+  boatId?: string;
+  boatName?: string;
+  requestedBy?: string;
+  assignedTo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  scheduledStartDate?: string;
+  scheduledEndDate?: string;
+  requiredFixDate?: string;
+  completedAt?: string;
+  notes?: string;
+}
+
+function formatDate(value: string | null | undefined) {
   if (!value) return "—";
   try {
     return new Date(value).toLocaleDateString();
@@ -10,7 +31,7 @@ function formatDate(value) {
   }
 }
 
-function getStatusColor(status) {
+function getStatusColor(status: string) {
   switch (status) {
     case "IN_PROGRESS":
       return "#f59e0b";
@@ -29,7 +50,7 @@ function getStatusColor(status) {
   }
 }
 
-function getPriorityColor(priority) {
+function getPriorityColor(priority: string) {
   switch (priority) {
     case "HIGH":
       return "#dc2626";
@@ -44,7 +65,7 @@ function getPriorityColor(priority) {
 
 export default function TechnicianMaintenanceListPage() {
   const navigate = useNavigate();
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<MaintenanceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -70,7 +91,7 @@ export default function TechnicianMaintenanceListPage() {
 
       setItems(Array.isArray(data.items) ? data.items : []);
     } catch (err) {
-      setError(err.message || "Failed to load maintenance items");
+      setError((err as Error).message || "Failed to load maintenance items");
     } finally {
       setLoading(false);
     }
@@ -149,7 +170,7 @@ export default function TechnicianMaintenanceListPage() {
   );
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   page: {
     maxWidth: 900,
     margin: "0 auto",

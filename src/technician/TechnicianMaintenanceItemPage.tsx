@@ -1,37 +1,51 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface MaintenanceItem {
   id: string;
   title: string;
   description: string;
+  problemDescription?: string;
   status: string;
   priority: string;
+  classification?: string;
   boatId?: string;
   boatName?: string;
   requestedBy?: string;
   assignedTo?: string;
+  technicianFirstName?: string;
+  technicianLastName?: string;
   createdAt?: string;
   updatedAt?: string;
   scheduledStartDate?: string;
   scheduledEndDate?: string;
+  requiredFixDate?: string;
+  actualStartDate?: string;
+  actualEndDate?: string;
   completedAt?: string;
+  supervisorNote?: string;
+  completionNote?: string;
   notes?: string;
 }
 
 interface Update {
   id: string;
-  type: string;
-  content: string;
+  updateType: string;
+  message?: string;
   createdAt: string;
-  createdBy?: string;
-  role?: string;
+  authorRole?: string;
+  authorFirstName?: string;
+  authorLastName?: string;
 }
 
 interface Attachment {
   id: string;
   filename: string;
-  url: string;
+  fileName?: string;
+  fileUrl?: string;
+  attachmentType?: string;
+  transcriptText?: string;
+  createdAt?: string;
   uploadedAt: string;
 }
 
@@ -176,7 +190,7 @@ export default function TechnicianMaintenanceItemPage() {
       setAttachments(Array.isArray(data.attachments) ? data.attachments : []);
       setScheduleRequests(Array.isArray(data.scheduleRequests) ? data.scheduleRequests : []);
     } catch (err) {
-      setPageError(err.message || "Failed to load maintenance item");
+      setPageError((err as Error).message || "Failed to load maintenance item");
     } finally {
       setLoading(false);
     }
@@ -201,11 +215,11 @@ export default function TechnicianMaintenanceItemPage() {
       setSuccessMessage("Work started.");
       await loadItem();
     } catch (err) {
-      setActionError(err.message || "Failed to start work");
+      setActionError((err as Error).message || "Failed to start work");
     }
   }
 
-  async function submitNote(e) {
+  async function submitNote(e: React.FormEvent) {
     e.preventDefault();
     setActionError("");
     setSuccessMessage("");
@@ -239,13 +253,13 @@ export default function TechnicianMaintenanceItemPage() {
       setSuccessMessage("Note added.");
       await loadItem();
     } catch (err) {
-      setActionError(err.message || "Failed to add note");
+      setActionError((err as Error).message || "Failed to add note");
     } finally {
       setSavingNote(false);
     }
   }
 
-  async function submitScheduleRequest(e) {
+  async function submitScheduleRequest(e: React.FormEvent) {
     e.preventDefault();
     setActionError("");
     setSuccessMessage("");
@@ -287,13 +301,13 @@ export default function TechnicianMaintenanceItemPage() {
       setSuccessMessage("Schedule change requested.");
       await loadItem();
     } catch (err) {
-      setActionError(err.message || "Failed to request schedule change");
+      setActionError((err as Error).message || "Failed to request schedule change");
     } finally {
       setSavingScheduleRequest(false);
     }
   }
 
-  async function submitComplete(e) {
+  async function submitComplete(e: React.FormEvent) {
     e.preventDefault();
     setActionError("");
     setSuccessMessage("");
@@ -323,7 +337,7 @@ export default function TechnicianMaintenanceItemPage() {
       setSuccessMessage("Item marked complete and sent for review.");
       await loadItem();
     } catch (err) {
-      setActionError(err.message || "Failed to complete item");
+      setActionError((err as Error).message || "Failed to complete item");
     } finally {
       setSavingCompletion(false);
     }
@@ -370,8 +384,8 @@ export default function TechnicianMaintenanceItemPage() {
     }));
 
     return [...updateEvents, ...attachmentEvents, ...scheduleEvents].sort((a, b) => {
-      const aTime = new Date(a.createdAt).getTime();
-      const bTime = new Date(b.createdAt).getTime();
+      const aTime = new Date(a.createdAt || 0).getTime();
+      const bTime = new Date(b.createdAt || 0).getTime();
       return aTime - bTime;
     });
   }, [updates, attachments, scheduleRequests]);
@@ -710,11 +724,11 @@ export default function TechnicianMaintenanceItemPage() {
                   <>
                     <div style={styles.timelineText}>
                       <b>Requested Start:</b>{" "}
-                      {formatDate(entry.raw.requestedStartDate)}
+                      {formatDate((entry.raw as ScheduleRequest).requestedStartDate)}
                     </div>
                     <div style={styles.timelineText}>
                       <b>Requested End:</b>{" "}
-                      {formatDate(entry.raw.requestedEndDate)}
+                      {formatDate((entry.raw as ScheduleRequest).requestedEndDate)}
                     </div>
                     {entry.message ? (
                       <div style={styles.timelineText}>{entry.message}</div>
@@ -722,9 +736,9 @@ export default function TechnicianMaintenanceItemPage() {
                   </>
                 ) : entry.type === "attachment" ? (
                   <>
-                    {entry.raw.fileUrl ? (
+                    {(entry.raw as Attachment).fileUrl ? (
                       <div style={styles.timelineText}>
-                        <a href={entry.raw.fileUrl} target="_blank" rel="noreferrer">
+                        <a href={(entry.raw as Attachment).fileUrl} target="_blank" rel="noreferrer">
                           Open file
                         </a>
                       </div>
@@ -745,7 +759,7 @@ export default function TechnicianMaintenanceItemPage() {
   );
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   page: {
     maxWidth: 900,
     margin: "0 auto",
