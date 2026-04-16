@@ -1,7 +1,50 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-function formatDate(value) {
+interface MaintenanceItem {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  boatId?: string;
+  boatName?: string;
+  requestedBy?: string;
+  assignedTo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  scheduledStartDate?: string;
+  scheduledEndDate?: string;
+  completedAt?: string;
+  notes?: string;
+}
+
+interface Update {
+  id: string;
+  type: string;
+  content: string;
+  createdAt: string;
+  createdBy?: string;
+  role?: string;
+}
+
+interface Attachment {
+  id: string;
+  filename: string;
+  url: string;
+  uploadedAt: string;
+}
+
+interface ScheduleRequest {
+  id: string;
+  requestedStartDate: string;
+  requestedEndDate: string;
+  justification: string;
+  status: string;
+  createdAt: string;
+}
+
+function formatDate(value: string | null | undefined) {
   if (!value) return "—";
   try {
     const d = new Date(value);
@@ -12,7 +55,7 @@ function formatDate(value) {
   }
 }
 
-function formatDateTime(value) {
+function formatDateTime(value: string | null | undefined) {
   if (!value) return "—";
   try {
     const d = new Date(value);
@@ -23,7 +66,7 @@ function formatDateTime(value) {
   }
 }
 
-function getStatusColor(status) {
+function getStatusColor(status: string) {
   switch (status) {
     case "OPEN":
       return "#6b7280";
@@ -42,7 +85,7 @@ function getStatusColor(status) {
   }
 }
 
-function getPriorityColor(priority) {
+function getPriorityColor(priority: string) {
   switch (priority) {
     case "HIGH":
       return "#dc2626";
@@ -55,7 +98,7 @@ function getPriorityColor(priority) {
   }
 }
 
-function getRoleLabel(role) {
+function getRoleLabel(role: string | null | undefined) {
   if (!role) return "User";
   if (role === "TECHNICIAN") return "Technician";
   if (role === "SUPERVISOR") return "Supervisor";
@@ -63,7 +106,7 @@ function getRoleLabel(role) {
   return role;
 }
 
-function getUpdateTitle(type) {
+function getUpdateTitle(type: string | null | undefined) {
   switch (type) {
     case "STATUS_CHANGE":
       return "Status update";
@@ -79,13 +122,13 @@ function getUpdateTitle(type) {
 }
 
 export default function TechnicianMaintenanceItemPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [item, setItem] = useState(null);
-  const [updates, setUpdates] = useState([]);
-  const [attachments, setAttachments] = useState([]);
-  const [scheduleRequests, setScheduleRequests] = useState([]);
+  const [item, setItem] = useState<MaintenanceItem | null>(null);
+  const [updates, setUpdates] = useState<Update[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [scheduleRequests, setScheduleRequests] = useState<ScheduleRequest[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
