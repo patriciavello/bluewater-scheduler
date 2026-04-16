@@ -109,74 +109,27 @@ export default function TechnicianMaintenanceListPage() {
     setError("");
 
     try {
-      console.log("API_BASE:", API_BASE);
-      console.log("Fetching from:", `${API_BASE}/api/technician/maintenance/items`);
-      
-      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}`, {
+      const res = await fetch(`${API_BASE}/api/technician/maintenance/items`, {
         method: "GET",
         credentials: "include",
         headers: getAuthHeaders(),
       });
 
-      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/note`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify({
-          message: note.trim(),
-        }),
-      });
-
-      const res = await fetch(
-        `${API_BASE}/api/technician/maintenance/items/${id}/request-schedule-change`,
-        {
-          method: "POST",
-          headers: getAuthHeaders(),
-          credentials: "include",
-          body: JSON.stringify({
-            requestedStartDate: requestedStartDate || null,
-            requestedEndDate: requestedEndDate || null,
-            justification: scheduleJustification.trim(),
-          }),
-        }
-      );
-
-      const res = await fetch(`${API_BASE}/api/technician/maintenance/items/${id}/complete`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify({
-          completionNote: completionNote.trim() || null,
-        }),
-      });
-
-      console.log("Response status:", res.status);
-      console.log("Response headers:", Object.fromEntries(res.headers.entries()));
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Response text:", text);
-        throw new Error(`HTTP ${res.status}: ${text.substring(0, 200)}`);
-      }
-
       const text = await res.text();
-      console.log("technician items raw response:", text);
 
       let data;
       try {
         data = JSON.parse(text);
       } catch {
-        throw new Error(`Server returned non-JSON response: ${text.slice(0, 120)}`);
+        throw new Error(`Server returned non-JSON: ${text.slice(0, 100)}`);
       }
-      console.log("Response data:", data);
 
-      if (!data.ok) {
+      if (!res.ok || !data.ok) {
         throw new Error(data?.error || "Failed to load maintenance items");
       }
 
       setItems(Array.isArray(data.items) ? data.items : []);
     } catch (err) {
-      console.error("Error loading items:", err);
       setError((err as Error).message || "Failed to load maintenance items");
     } finally {
       setLoading(false);
