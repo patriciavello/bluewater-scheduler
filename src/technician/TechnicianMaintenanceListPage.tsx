@@ -8,14 +8,19 @@ console.log("API_BASE:", API_BASE);
 
 interface MaintenanceItem {
   id: string;
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   problemDescription?: string;
+  requestStatus?: string;
   status: string;
   priority: string;
   classification?: string;
   boatId?: string;
   boatName?: string;
+  technicianUserId?: string;
+  technicianFirstName?: string;
+  technicianLastName?: string;
+  technicianEmail?: string;
   requestedBy?: string;
   assignedTo?: string;
   createdAt?: string;
@@ -173,7 +178,9 @@ export default function TechnicianMaintenanceListPage() {
 
               <div style={styles.problem}>{item.problemDescription}</div>
 
+              <div style={styles.meta}><b>Request Status:</b> {item.requestStatus || "—"}</div>
               <div style={styles.meta}><b>Boat:</b> {item.boatName || "—"}</div>
+              <div style={styles.meta}><b>Technician:</b> {item.technicianFirstName || item.technicianLastName ? `${[item.technicianFirstName, item.technicianLastName].filter(Boolean).join(" ")}` : item.technicianEmail || "—"}</div>
               <div style={styles.meta}><b>Classification:</b> {item.classification || "—"}</div>
               <div style={styles.meta}><b>Required Fix Date:</b> {formatDate(item.requiredFixDate)}</div>
               <div style={styles.meta}><b>Scheduled Start:</b> {formatDate(item.scheduledStartDate)}</div>
