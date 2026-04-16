@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
+
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+console.log("API_BASE:", API_BASE);
 
 interface MaintenanceItem {
   id: string;
@@ -80,19 +83,37 @@ export default function TechnicianMaintenanceListPage() {
     setError("");
 
     try {
+      console.log("API_BASE:", API_BASE);
+      console.log("Fetching from:", `${API_BASE}/api/technician/maintenance/items`);
+      
       const res = await fetch(`${API_BASE}/api/technician/maintenance/items`, {
         method: "GET",
         credentials: "include",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
       });
 
-      const data = await res.json();
+      console.log("Response status:", res.status);
+      console.log("Response headers:", Object.fromEntries(res.headers.entries()));
 
-      if (!res.ok || !data.ok) {
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Response text:", text);
+        throw new Error(`HTTP ${res.status}: ${text.substring(0, 200)}`);
+      }
+
+      const data = await res.json();
+      console.log("Response data:", data);
+
+      if (!data.ok) {
         throw new Error(data?.error || "Failed to load maintenance items");
       }
 
       setItems(Array.isArray(data.items) ? data.items : []);
     } catch (err) {
+      console.error("Error loading items:", err);
       setError((err as Error).message || "Failed to load maintenance items");
     } finally {
       setLoading(false);
