@@ -8,6 +8,8 @@ import PaymentCancelledPage from "./PaymentCancelledPage";
 import MaintenanceRequest from "./MaintenanceRequest";
 import AdminLayout from "./admin/AdminLayout";
 import Admin from "./Admin";
+import TechnicianMaintenanceItemPage from "./pages/technician/TechnicianMaintenanceItemPage";
+import TechnicianMaintenanceListPage from "./pages/technician/TechnicianMaintenanceListPage";
 
 export default function App() {
   return (
@@ -19,10 +21,20 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/payment-success" element={<PaymentSuccessPage />} />
       <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
+
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Admin />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
+
+      <Route
+        path="/technician/maintenance"
+        element={<TechnicianMaintenanceListPage />}
+      />
+      <Route
+        path="/technician/maintenance/:id"
+        element={<TechnicianMaintenanceItemPage />}
+      />
 
       {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
