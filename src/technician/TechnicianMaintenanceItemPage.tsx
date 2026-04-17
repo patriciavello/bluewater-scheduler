@@ -468,8 +468,8 @@ export default function TechnicianMaintenanceItemPage() {
 }
 
   const canStart = item?.status === "ASSIGNED";
-  const canAddProgress = true;
-  const canRequestSchedule = item?.status === "ASSIGNED" || item?.status === "IN_PROGRESS";
+  const canAddProgress = item?.status !== "DONE";
+  const canRequestSchedule = item?.status !== "DONE";
   const canComplete = item?.status === "IN_PROGRESS";
 
   const timeline = useMemo(() => {
