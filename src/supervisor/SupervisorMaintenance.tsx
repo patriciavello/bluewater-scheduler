@@ -256,7 +256,7 @@ export default function SupervisorMaintenance() {
                       }
                       disabled={busyId === i.id || !isApproved}
                     >
-                      <option value="OPEN">Waiting for Approval</option>
+                      <option value="OPEN">OPEN</option>
                       <option value="SCHEDULED">SCHEDULED</option>
                       <option value="IN_PROGRESS">IN PROGRESS</option>
                       <option value="DONE">DONE</option>

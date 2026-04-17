@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -19,6 +20,7 @@ type Me = {
   country?: string | null;
   is_goldmember: boolean;
   is_captain: boolean;
+  is_technician?: boolean;
 };
 
 type MyReservation = {
@@ -88,6 +90,7 @@ async function apiFetch(path: string, init: RequestInit = {}) {
 
 export default function UserAccount() {
   const [tab, setTab] = useState<"profile" | "password" | "reservations">("profile");
+  const navigate = useNavigate();
 
   // login form
   const [loginEmail, setLoginEmail] = useState("");
@@ -541,7 +544,15 @@ export default function UserAccount() {
           + Maintenance request
         </button>
       </a>
-
+      // Technician dashboard link, only visible to technicians
+      {me?.is_technician && (
+        <button
+          style={styles.primary}
+          onClick={() => navigate("/technician/maintenance")}
+        >
+          Technician Dashboard
+        </button>
+      )}
 
       {msg ? <div style={{ ...styles.msg, marginTop: 12 }}>{msg}</div> : null}
 
