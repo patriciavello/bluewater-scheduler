@@ -7,9 +7,11 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 function getAuthHeaders(): Record<string, string> {
   const token =
+    localStorage.getItem("ADMIN_JWT") ||
     localStorage.getItem("token") ||
     localStorage.getItem("adminToken") ||
     localStorage.getItem("authToken") ||
+    sessionStorage.getItem("ADMIN_JWT") ||
     sessionStorage.getItem("token") ||
     sessionStorage.getItem("adminToken") ||
     sessionStorage.getItem("authToken");
@@ -25,6 +27,7 @@ function getAuthHeaders(): Record<string, string> {
 
   return headers;
 }
+
 
 interface MaintenanceItem {
   id: string;
@@ -433,9 +436,11 @@ export default function TechnicianMaintenanceItemPage() {
     formData.append("photo", file);
 
     const token =
+      localStorage.getItem("ADMIN_JWT") ||
       localStorage.getItem("token") ||
       localStorage.getItem("adminToken") ||
       localStorage.getItem("authToken") ||
+      sessionStorage.getItem("ADMIN_JWT") ||
       sessionStorage.getItem("token") ||
       sessionStorage.getItem("adminToken") ||
       sessionStorage.getItem("authToken");
