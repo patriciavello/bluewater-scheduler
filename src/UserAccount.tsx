@@ -544,7 +544,7 @@ export default function UserAccount() {
           + Maintenance request
         </button>
       </a>
-      // Technician dashboard link, only visible to technicians
+      {/* Technician dashboard link, only visible to technicians */}
       {me?.is_technician && (
         <button
           style={styles.primary}
