@@ -160,6 +160,55 @@ function getUpdateTitle(type: string | null | undefined) {
   }
 }
 
+function getRoleColor(role: string | null | undefined) {
+  switch (role) {
+    case "TECHNICIAN":
+      return {
+        background: "#eff6ff",
+        border: "#93c5fd",
+        label: "#1d4ed8",
+      };
+    case "SUPERVISOR":
+      return {
+        background: "#f5f3ff",
+        border: "#c4b5fd",
+        label: "#6d28d9",
+      };
+    case "ADMIN":
+      return {
+        background: "#ecfdf5",
+        border: "#86efac",
+        label: "#166534",
+      };
+    default:
+      return {
+        background: "#f9fafb",
+        border: "#d1d5db",
+        label: "#374151",
+      };
+  }
+}
+
+function getEntryColors(entry: any) {
+  if (entry.type === "schedule") {
+    return {
+      background: "#fff7ed",
+      border: "#fdba74",
+      label: "#c2410c",
+    };
+  }
+
+  if (entry.type === "attachment") {
+    return {
+      background: "#f0fdf4",
+      border: "#86efac",
+      label: "#166534",
+    };
+  }
+
+  return getRoleColor(entry.raw?.authorRole);
+}
+
 export default function TechnicianMaintenanceItemPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -419,7 +468,11 @@ export default function TechnicianMaintenanceItemPage() {
 }
 
   const canStart = item?.status === "ASSIGNED";
-  const canAddProgress = item?.status === "ASSIGNED" || item?.status === "IN_PROGRESS" || item?.status === "WAITING_SUPERVISOR";
+  const canAddProgress =
+    item?.status === "ASSIGNED" ||
+    item?.status === "IN_PROGRESS" ||
+    item?.status === "WAITING_SUPERVISOR" ||
+    item?.status === "DONE_PENDING_REVIEW";
   const canRequestSchedule = item?.status === "ASSIGNED" || item?.status === "IN_PROGRESS";
   const canComplete = item?.status === "IN_PROGRESS";
 
@@ -714,7 +767,10 @@ export default function TechnicianMaintenanceItemPage() {
 
       {canAddProgress && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Add Progress Note</h2>
+          <h2 style={styles.sectionTitle}>Add Note / Comment</h2>
+          <div style={styles.noteHelp}>
+            Technicians and supervisors can both add dated notes here during the maintenance process.
+          </div>
 
           <form onSubmit={submitNote}>
             <textarea
@@ -722,7 +778,7 @@ export default function TechnicianMaintenanceItemPage() {
               onChange={(e) => setNote(e.target.value)}
               style={styles.textarea}
               rows={4}
-              placeholder="Write progress notes here"
+              placeholder="Add an update, question, answer, or maintenance comment"
             />
             <button type="submit" style={styles.primaryButton} disabled={savingNote}>
               {savingNote ? "Saving..." : "Add Note"}
@@ -805,20 +861,35 @@ export default function TechnicianMaintenanceItemPage() {
       </div>
 
       <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>Timeline</h2>
+        <h2 style={styles.sectionTitle}>Timeline / Notes / Comments</h2>
 
         {timeline.length === 0 ? (
           <div style={styles.emptyText}>No timeline activity yet.</div>
         ) : (
           <div style={styles.stack}>
             {timeline.map((entry) => (
-              <div key={entry.id} style={styles.timelineCard}>
+              <div
+                key={entry.id}
+                style={{
+                  ...styles.timelineCard,
+                  background: getEntryColors(entry).background,
+                  border: `1px solid ${getEntryColors(entry).border}`,
+                }}
+              >
                 <div style={styles.timelineHeader}>
                   <div style={styles.timelineTitle}>{entry.title}</div>
                   <div style={styles.timelineTime}>{formatDateTime(entry.createdAt)}</div>
                 </div>
 
-                <div style={styles.timelineSubtitle}>{entry.subtitle}</div>
+                <div
+                  style={{
+                    ...styles.timelineSubtitle,
+                    color: getEntryColors(entry).label,
+                    fontWeight: 700,
+                  }}
+                >
+                  {entry.subtitle}
+                </div>
 
                 {entry.type === "schedule" ? (
                   <>
@@ -1086,4 +1157,9 @@ const styles: Record<string, React.CSSProperties> = {
     whiteSpace: "pre-wrap",
     wordBreak: "break-word",
   },
+  noteHelp: {
+  marginBottom: 12,
+  color: "#6b7280",
+  fontSize: 14,
+},
 };
