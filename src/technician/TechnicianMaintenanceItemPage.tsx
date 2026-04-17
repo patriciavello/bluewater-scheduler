@@ -468,11 +468,7 @@ export default function TechnicianMaintenanceItemPage() {
 }
 
   const canStart = item?.status === "ASSIGNED";
-  const canAddProgress =
-    item?.status === "ASSIGNED" ||
-    item?.status === "IN_PROGRESS" ||
-    item?.status === "WAITING_SUPERVISOR" ||
-    item?.status === "DONE_PENDING_REVIEW";
+  const canAddProgress = item?.status !== "DONE";
   const canRequestSchedule = item?.status === "ASSIGNED" || item?.status === "IN_PROGRESS";
   const canComplete = item?.status === "IN_PROGRESS";
 
