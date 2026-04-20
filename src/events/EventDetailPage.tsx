@@ -131,9 +131,12 @@ export default function EventDetailPage() {
 
   return (
     <div style={styles.page}>
-      <div>
+      <div style={styles.topActions}>
         <Link to="/events" style={{ textDecoration: "none" }}>
           <button style={styles.btn}>← Back to Events</button>
+        </Link>
+        <Link to="/account" style={{ textDecoration: "none" }}>
+          <button style={styles.btn}>My Account</button>
         </Link>
       </div>
 
@@ -233,6 +236,11 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 16,
     display: "grid",
     gap: 16,
+  },
+  topActions: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
   },
   btn: {
     padding: "10px 12px",
