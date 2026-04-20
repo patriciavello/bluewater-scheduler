@@ -10,6 +10,7 @@ import AdminLayout from "./admin/AdminLayout";
 import Admin from "./Admin";
 import TechnicianMaintenanceItemPage from "./technician/TechnicianMaintenanceItemPage.tsx";
 import TechnicianMaintenanceListPage from "./technician/TechnicianMaintenanceListPage.tsx";
+import AdminEvents from "./admin/AdminEvents";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         path="/technician/maintenance/:id"
         element={<TechnicianMaintenanceItemPage />}
       />
+      <Route path="events" element={<AdminEvents />} />
 
       {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
