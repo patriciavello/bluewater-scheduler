@@ -3,6 +3,8 @@ import AdminUsers from "./admin/AdminUsers";
 import AdminMaintenance from "./admin/AdminMaintenance";
 import SupervisorMaintenance from "./supervisor/SupervisorMaintenance";
 import BoatsPage from "./admin/pages/BoatsPage";
+import AdminEvents from "./admin/AdminEvents";
+
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -236,6 +238,7 @@ function AdminCalendarView({
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [purposeFilter, setPurposeFilter] = useState("all");
+  
 
   const startDateObj = useMemo(() => new Date(`${start}T00:00:00`), [start]);
   const dayList = useMemo(
@@ -657,7 +660,7 @@ export default function Admin() {
   const [loggingIn, setLoggingIn] = useState(false);
   
 
-  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor" | "boats">(() => {
+  const [view, setView] = useState<"calendar" | "list" | "users" | "maintenance" | "supervisor" | "boats" | "events">(() => {
     const saved = localStorage.getItem(VIEW_KEY);
     if (
       saved === "calendar" ||
@@ -665,7 +668,8 @@ export default function Admin() {
       saved === "users" ||
       saved === "maintenance" ||
       saved === "supervisor" ||
-      saved === "boats"  ) {
+      saved === "boats" ||
+      saved === "events") {
       return saved;
     }
     return "calendar";
@@ -747,6 +751,7 @@ export default function Admin() {
   const canSeeMaintenance = !!adminUser?.isAdmin;
   const canSeeSupervisor = !!adminUser?.isSupervisor || !!adminUser?.isAdmin;
   const canSeeBoats = !!adminUser?.isAdmin || !!adminUser?.isSupervisor;
+  const canSeeEvents = !!adminUser?.isAdmin || !!adminUser?.isSupervisor;
 
   function setAndStoreToken(t: string) {
     if (t) localStorage.setItem(TOKEN_KEY, t);
@@ -754,7 +759,7 @@ export default function Admin() {
     setToken(t);
   }
 
-  function setAndStoreView(nextView: "calendar" | "list" | "users" | "maintenance" | "supervisor" |"boats") {
+  function setAndStoreView(nextView: "calendar" | "list" | "users" | "maintenance" | "supervisor" |"boats" | "events") {
   localStorage.setItem(VIEW_KEY, nextView);
   setView(nextView);
 }
@@ -1179,6 +1184,16 @@ export default function Admin() {
               </button>
             ) : null}
 
+            {canSeeEvents ? (
+              <button
+                style={styles.btn}
+                onClick={() => setAndStoreView("events")}
+                disabled={view === "events"}
+              >
+                Events
+              </button>
+            ) : null}
+
             <button
               style={styles.btn}
               onClick={() => {
@@ -1349,6 +1364,8 @@ export default function Admin() {
             <SupervisorMaintenance />
           ) : view === "boats" && canSeeBoats ? (
             <BoatsPage />
+          ) : view === "events" && canSeeEvents ? (
+            <AdminEvents />
           ) : view === "maintenance" && canSeeMaintenance ? (
             <AdminMaintenance />
           ) : view === "list" && canSeeReservations ? (
