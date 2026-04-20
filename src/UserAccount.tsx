@@ -54,7 +54,25 @@ type MyReservation = {
   change_fee_percent?: number | null;
   change_fee_amount?: number | null;
 };
+type MyEventBooking = {
+  id: string;
+  eventId: string;
+  variationId: string;
+  userId?: string | null;
+  participantsCount: number;
+  status: string;
+  amountPaid?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 
+  eventTitle?: string | null;
+  startDate?: string | null;
+  endExclusive?: string | null;
+  eventType?: string | null;
+  boatName?: string | null;
+  variationName?: string | null;
+  price?: number | null;
+};
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -89,7 +107,7 @@ async function apiFetch(path: string, init: RequestInit = {}) {
 }
 
 export default function UserAccount() {
-  const [tab, setTab] = useState<"profile" | "password" | "reservations">("profile");
+  const [tab, setTab] = useState<"profile" | "password" | "reservations" | "events">("profile");
   const navigate = useNavigate();
 
   // login form
@@ -108,6 +126,7 @@ export default function UserAccount() {
   
   const [me, setMe] = useState<Me | null>(null);
   const [resvs, setResvs] = useState<MyReservation[]>([]);
+  const [eventBookings, setEventBookings] = useState<MyEventBooking[]>([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -282,6 +301,37 @@ export default function UserAccount() {
       setResvs(normalized);
     } catch (e: any) {
       setMsg(e?.message || "Failed to load reservations");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadMyEventBookings() {
+    setLoading(true);
+    setMsg("");
+
+    try {
+      const { res, data } = await apiFetch("/api/me/event-bookings", { method: "GET" });
+      if (!res.ok || !data.ok) throw new Error(data.error || "Failed to load event bookings");
+
+      const toYMD = (v: any) => {
+        if (!v) return "";
+        const s = String(v);
+        return s.length >= 10 ? s.slice(0, 10) : s;
+      };
+
+      const normalized = (data.bookings || []).map((b: any) => ({
+        ...b,
+        startDate: toYMD(b.startDate ?? b.start_date),
+        endExclusive: toYMD(b.endExclusive ?? b.end_exclusive),
+        amountPaid: b.amountPaid ?? b.amount_paid ?? null,
+        createdAt: b.createdAt ?? b.created_at ?? null,
+        updatedAt: b.updatedAt ?? b.updated_at ?? null,
+      }));
+
+      setEventBookings(normalized);
+    } catch (e: any) {
+      setMsg(e?.message || "Failed to load event bookings");
     } finally {
       setLoading(false);
     }
@@ -529,6 +579,16 @@ export default function UserAccount() {
         >
           My reservations
         </button>
+        <button
+          style={styles.btn}
+          onClick={async () => {
+            setTab("events");
+            await loadMyEventBookings();
+          }}
+          disabled={tab === "events"}
+        >
+          My Events
+        </button>
 
         {/* New reservation → go to schedule */}
         <a href="/" style={{ textDecoration: "none" }}>
@@ -656,6 +716,23 @@ export default function UserAccount() {
                   onEdit={(s, e, note, acceptFee) => editReservation(r.id, s, e, note, acceptFee)}
                 />
               ))}
+            </div>
+          )}
+          {tab === "events" && (
+            <div style={{ ...styles.card, marginTop: 12 }}>
+              <h3 style={{ marginTop: 0 }}>My Events</h3>
+
+              {loading ? (
+                <div style={{ opacity: 0.7 }}>Loading…</div>
+              ) : eventBookings.length === 0 ? (
+                <div style={{ opacity: 0.7 }}>No event bookings yet.</div>
+              ) : (
+                <div style={{ display: "grid", gap: 10 }}>
+                  {eventBookings.map((b) => (
+                    <EventBookingCard key={b.id} b={b} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -953,6 +1030,73 @@ function ReservationCard({
   );
 }
 
+function EventBookingCard({ b }: { b: MyEventBooking }) {
+  function formatDateRange(startDate?: string | null, endExclusive?: string | null) {
+    if (!startDate || !endExclusive) return "—";
+
+    const end = new Date(`${endExclusive}T00:00:00`);
+    end.setDate(end.getDate() - 1);
+    const endText = end.toISOString().slice(0, 10);
+
+    return `${startDate} → ${endText}`;
+  }
+
+  function formatMoney(v?: number | null) {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "—";
+    return `$${n.toFixed(2)}`;
+  }
+
+  return (
+    <div style={styles.resCard}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontWeight: 900 }}>{b.eventTitle || "Event"}</div>
+          <div style={{ opacity: 0.75, fontSize: 13 }}>
+            {b.eventType || "EVENT"} · {b.boatName || "Boat"}
+          </div>
+        </div>
+
+        <div style={{ opacity: 0.5, fontSize: 12, fontFamily: "ui-monospace, Menlo, Monaco, Consolas, monospace" }}>
+          {b.id}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 8, fontSize: 13 }}>
+        Dates: <b>{formatDateRange(b.startDate, b.endExclusive)}</b>
+      </div>
+
+      <div style={{ marginTop: 6, fontSize: 13 }}>
+        Package: <b>{b.variationName || "—"}</b>
+      </div>
+
+      <div style={{ marginTop: 6, fontSize: 13 }}>
+        Participants: <b>{b.participantsCount ?? "—"}</b>
+      </div>
+
+      <div style={{ marginTop: 6, fontSize: 13 }}>
+        Status: <b>{String(b.status || "").toUpperCase()}</b>
+      </div>
+
+      <div style={{ marginTop: 6, fontSize: 13 }}>
+        Amount: <b>{formatMoney(b.amountPaid ?? b.price ?? null)}</b>
+      </div>
+
+      {b.eventId ? (
+        <div style={{ marginTop: 10 }}>
+          <button
+            style={styles.btn}
+            onClick={() => {
+              window.location.href = `/events/${b.eventId}`;
+            }}
+          >
+            View Event
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 const styles: Record<string, React.CSSProperties> = {
   page: { maxWidth: 1000, margin: "0 auto", padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial" },
