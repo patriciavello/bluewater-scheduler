@@ -536,6 +536,9 @@ export default function UserAccount() {
             + New reservation
           </button>
         </a>
+        <a href="/events" style={{ textDecoration: "none" }}>
+           <button style={styles.btn}>Events</button>
+        </a>    
       </div>
 
       {/*add a button for maitenance request*/}

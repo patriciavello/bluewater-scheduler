@@ -10,13 +10,16 @@ import AdminLayout from "./admin/AdminLayout";
 import Admin from "./Admin";
 import TechnicianMaintenanceItemPage from "./technician/TechnicianMaintenanceItemPage.tsx";
 import TechnicianMaintenanceListPage from "./technician/TechnicianMaintenanceListPage.tsx";
-
+import EventsListPage from "./events/EventsListPage";
+import EventDetailPage from "./events/EventDetailPage";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<SchedulerApp />} />
       <Route path="/account" element={<UserAccount />} />
+      <Route path="/events" element={<EventsListPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
       <Route path="/maintenance/request" element={<MaintenanceRequest />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
