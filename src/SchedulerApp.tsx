@@ -82,6 +82,23 @@ function getReservationForDate(reservationsForBoat: ApiReservation[], dateIso: s
   return reservationsForBoat.find((r) => dateIso >= r.startDate && dateIso < r.endExclusive) || null;
 }
 
+function hasEventInWindow(
+  reservationsForBoat: ApiReservation[],
+  scheduleStart: Date,
+  scheduleEnd: Date
+) {
+  return reservationsForBoat.some((r) => {
+    if (!r.eventId) return false;
+
+    const start = fromISODate(r.startDate);
+    const endExclusive = fromISODate(r.endExclusive);
+
+    if (!start || !endExclusive) return false;
+
+    return start <= scheduleEnd && endExclusive > scheduleStart;
+  });
+}
+
 function windowFits(
   reservationsForBoat: ApiReservation[],
   startDay: Date,
@@ -537,27 +554,31 @@ export default function SchedulerApp() {
   const boatsFiltered = useMemo(() => {
     const selected = selectedBoatIds;
     const base = selected.size ? boats.filter((b) => selected.has(b.id)) : boats;
-  
-    // If user picked a start date, enforce availability starting THAT day
+
     const parsed = fromISODate(startDateStr);
     const startToCheck = parsed ? startOfDay(parsed) : null;
-  
+
     return base.filter((b) => {
       const r = reservationsByBoat[b.id] || [];
-  
-      // ✅ If start date is set, boat must be open on that start date
+      const hasEvent = hasEventInWindow(r, scheduleStart, scheduleEnd);
+
+      // If user picked a start date, still keep the boat visible when it has an event
       if (startToCheck) {
         const startIso = toISODate(startToCheck);
-  
-        // start date booked -> hide boat
-        if (isBookedForDate(r, startIso)) return false;
-  
-        // duration must fit starting that start date
-        return windowFits(r, startToCheck, durationDays, scheduleStart, scheduleEnd);
+
+        if (isBookedForDate(r, startIso)) {
+          return hasEvent;
+        }
+
+        if (windowFits(r, startToCheck, durationDays, scheduleStart, scheduleEnd)) {
+          return true;
+        }
+
+        return hasEvent;
       }
-  
-      // If no start date chosen, keep your original behavior
-      return hasAnyAvailableWindow(r, scheduleStart, durationDays);
+
+      // No start date: show boats that are open OR have an event in view
+      return hasAnyAvailableWindow(r, scheduleStart, durationDays) || hasEvent;
     });
   }, [
     boats,
