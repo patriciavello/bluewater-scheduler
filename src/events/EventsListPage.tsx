@@ -29,10 +29,24 @@ async function safeJson(res: Response) {
   }
 }
 
+function parseDate(value: string) {
+  if (!value) return null;
+  const normalized = value.includes("T") ? value : `${value}T00:00:00`;
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toYmd(value: string) {
+  const parsed = parseDate(value);
+  return parsed ? parsed.toISOString().slice(0, 10) : value || "Unknown date";
+}
+
 function toDisplayRange(startDate: string, endExclusive: string) {
-  const end = new Date(`${endExclusive}T00:00:00`);
+  const start = toYmd(startDate);
+  const end = parseDate(endExclusive);
+  if (!end) return `${start} → Unknown date`;
   end.setDate(end.getDate() - 1);
-  return `${startDate} → ${end.toISOString().slice(0, 10)}`;
+  return `${start} → ${end.toISOString().slice(0, 10)}`;
 }
 
 export default function EventsListPage() {
