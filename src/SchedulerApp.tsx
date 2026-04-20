@@ -82,6 +82,11 @@ function getReservationForDate(reservationsForBoat: ApiReservation[], dateIso: s
   return reservationsForBoat.find((r) => dateIso >= r.startDate && dateIso < r.endExclusive) || null;
 }
 
+function getEventForDate(reservationsForBoat: ApiReservation[], dateIso: string) {
+  const r = getReservationForDate(reservationsForBoat, dateIso);
+  return r?.eventId ? r : null;
+}
+
 function hasEventInWindow(
   reservationsForBoat: ApiReservation[],
   scheduleStart: Date,
@@ -486,6 +491,10 @@ export default function SchedulerApp() {
     setModalBoatId(boatId);
   };
 
+  const onClickEventCell = (eventId: string) => {
+    navigate(`/events/${eventId}`);
+  };
+
   const toggleBoat = (id: string) => {
     setSelectedBoatIds((prev) => {
       const next = new Set(prev);
@@ -779,7 +788,17 @@ export default function SchedulerApp() {
                         <div className="flex min-w-0 flex-col">
                           <button
                             type="button"
-                            onClick={() => setModalBoatId(b.id)}
+                            onClick={() => {
+                              const boatReservations = reservationsByBoat[b.id] || [];
+                              const selectedEvent = getEventForDate(boatReservations, requestStartIso);
+
+                              if (selectedEvent?.eventId) {
+                                navigate(`/events/${selectedEvent.eventId}`);
+                                return;
+                              }
+
+                              setModalBoatId(b.id);
+                            }}
                             className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-left text-sm font-medium text-white ring-1 ring-white/15 hover:bg-white/15"
                           >
                             <span className="truncate">{b.name}</span>
@@ -814,6 +833,11 @@ export default function SchedulerApp() {
                         <div key={iso} className={cx("p-2", inWin ? "" : "opacity-45")}>
                           <div
                             onClick={() => {
+                              if (reservationForDay?.eventId) {
+                                onClickEventCell(reservationForDay.eventId);
+                                return;
+                              }
+
                               if (!clickable) return;
                               onClickOpenCell(b.id, d);
                             }}
@@ -822,20 +846,20 @@ export default function SchedulerApp() {
                               inWin
                                 ? cx(
                                     "ring-1",
-                                    clickable
+                                    isEvent
+                                      ? "bg-violet-400/30 ring-violet-300/40 cursor-pointer hover:bg-violet-400/40"
+                                      : clickable
                                       ? "bg-white/6 ring-white/15 hover:bg-white/10 cursor-pointer"
-                                      : isEvent
-                                      ? "bg-violet-400/30 ring-violet-300/40"
                                       : "bg-white/12 ring-white/15",
                                     !booked && durationDays > 1 && fit ? "ring-2 ring-white/25" : ""
                                   )
                                 : cx(
                                     "ring-0",
-                                    clickable
+                                    isEvent
+                                      ? "bg-violet-400/20 cursor-pointer hover:bg-violet-400/30"
+                                      : clickable
                                       ? "bg-white/3 cursor-pointer"
-                                      : isEvent
-                                      ? "bg-violet-400/20"
-                                      : "bg-white/8"
+                                      : "bg-white/8"    
                                   )
                             )}
                             title={
