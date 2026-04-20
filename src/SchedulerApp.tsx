@@ -28,6 +28,9 @@ type ApiReservation = {
   startDate: string; // YYYY-MM-DD
   endExclusive: string; // YYYY-MM-DD
   status: string;
+  eventId?: string | null;
+  eventTitle?: string | null;
+  eventType?: string | null;
 };
 
 // -------------------- Helpers --------------------
@@ -67,10 +70,16 @@ function nextSunday(ref: Date = new Date()) {
   return addDays(d, delta === 0 ? 7 : delta);
 }
 
+
+
 // -------------------- Booking utilities --------------------
 // Treat anything returned by schedule as "booked" for end users
 function isBookedForDate(reservationsForBoat: ApiReservation[], dateIso: string) {
   return reservationsForBoat.some((r) => dateIso >= r.startDate && dateIso < r.endExclusive);
+}
+
+function getReservationForDate(reservationsForBoat: ApiReservation[], dateIso: string) {
+  return reservationsForBoat.find((r) => dateIso >= r.startDate && dateIso < r.endExclusive) || null;
 }
 
 function windowFits(
@@ -766,11 +775,18 @@ export default function SchedulerApp() {
 
                     {days.map((d) => {
                       const iso = toISODate(d);
-                      const booked = isBookedForDate(r, iso);
+                      const reservationForDay = getReservationForDate(r, iso);
+                      const booked = !!reservationForDay;
                       const fit = !booked && windowFits(r, d, durationDays, scheduleStart, scheduleEnd);
                       const inWin = isInSelectedWindow(d);
 
-                      const label = booked ? "Booked" : "Open";
+                      const isEvent = !!reservationForDay?.eventId;
+                      const label = booked
+                        ? isEvent
+                          ? reservationForDay?.eventTitle || "Event"
+                          : "Booked"
+                        : "Open";
+
                       const clickable = !booked;
 
                       return (
@@ -787,17 +803,25 @@ export default function SchedulerApp() {
                                     "ring-1",
                                     clickable
                                       ? "bg-white/6 ring-white/15 hover:bg-white/10 cursor-pointer"
+                                      : isEvent
+                                      ? "bg-violet-400/30 ring-violet-300/40"
                                       : "bg-white/12 ring-white/15",
                                     !booked && durationDays > 1 && fit ? "ring-2 ring-white/25" : ""
                                   )
                                 : cx(
                                     "ring-0",
-                                    clickable ? "bg-white/3 cursor-pointer" : "bg-white/8"
+                                    clickable
+                                      ? "bg-white/3 cursor-pointer"
+                                      : isEvent
+                                      ? "bg-violet-400/20"
+                                      : "bg-white/8"
                                   )
                             )}
                             title={
                               clickable
                                 ? `Open — click to set start date (${iso}) and request`
+                                : isEvent
+                                ? `${reservationForDay?.eventTitle || "Event"}${reservationForDay?.eventType ? ` • ${reservationForDay.eventType}` : ""}`
                                 : "Booked"
                             }
                             role={clickable ? "button" : undefined}
@@ -805,8 +829,16 @@ export default function SchedulerApp() {
                             <div className="flex h-full items-center justify-center">
                               <span
                                 className={cx(
-                                  "text-[11px]",
-                                  inWin ? (booked ? "text-white/70" : "text-white/80") : "text-white/45"
+                                  "text-[11px] font-medium",
+                                  inWin
+                                    ? booked
+                                      ? isEvent
+                                        ? "text-violet-100"
+                                        : "text-white/70"
+                                      : "text-white/80"
+                                    : isEvent
+                                    ? "text-violet-200/80"
+                                    : "text-white/45"
                                 )}
                               >
                                 {label}
