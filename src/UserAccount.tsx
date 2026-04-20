@@ -599,9 +599,7 @@ export default function UserAccount() {
         <a href="/events" style={{ textDecoration: "none" }}>
            <button style={styles.btn}>Events</button>
         </a>    
-      </div>
-
-      {/*add a button for maitenance request*/}
+              {/*add a button for maitenance request*/}
       <a href="/maintenance/request" style={{ textDecoration: "none" }}>
         <button style={styles.btn}>
           + Maintenance request
@@ -616,6 +614,9 @@ export default function UserAccount() {
           Technician Dashboard
         </button>
       )}
+      </div>
+
+
 
       {msg ? <div style={{ ...styles.msg, marginTop: 12 }}>{msg}</div> : null}
 
@@ -695,7 +696,7 @@ export default function UserAccount() {
                 checked={hidePastReservations}
                 onChange={(e) => setHidePastReservations(e.target.checked)}
               />
-              Hide past reservations
+              <span>Hide past reservations</span>
             </label>
           </div>
 
@@ -718,21 +719,22 @@ export default function UserAccount() {
               ))}
             </div>
           )}
-          {tab === "events" && (
-            <div style={{ ...styles.card, marginTop: 12 }}>
-              <h3 style={{ marginTop: 0 }}>My Events</h3>
+        </div>
+      )}
 
-              {loading ? (
-                <div style={{ opacity: 0.7 }}>Loading…</div>
-              ) : eventBookings.length === 0 ? (
-                <div style={{ opacity: 0.7 }}>No event bookings yet.</div>
-              ) : (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {eventBookings.map((b) => (
-                    <EventBookingCard key={b.id} b={b} />
-                  ))}
-                </div>
-              )}
+      {tab === "events" && (
+        <div style={{ ...styles.card, marginTop: 12 }}>
+          <h3 style={{ marginTop: 0 }}>My Events</h3>
+
+          {loading ? (
+            <div style={{ opacity: 0.7 }}>Loading…</div>
+          ) : eventBookings.length === 0 ? (
+            <div style={{ opacity: 0.7 }}>No event bookings yet.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 10 }}>
+              {eventBookings.map((b) => (
+                <EventBookingCard key={b.id} b={b} />
+              ))}
             </div>
           )}
         </div>
