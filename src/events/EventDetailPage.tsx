@@ -62,16 +62,6 @@ function toDisplayRange(startDate: string, endExclusive: string) {
   return `${start} → ${end.toISOString().slice(0, 10)}`;
 }
 
-async function safeJson(res: Response) {
-  const text = await res.text();
-  try {
-    return text ? JSON.parse(text) : {};
-  } catch {
-    return {};
-  }
-}
-
-
 function eventTypeLabel(type?: string) {
   if (type === "TRAINING") return "🎓 Training";
   if (type === "FLOTILLA") return "⛵ Flotilla";
