@@ -584,6 +584,9 @@ export default function AdminEvents() {
                     setForm((p) => ({ ...p, maxParticipants: Number(e.target.value || 1) }))
                   }
                 />
+                <span style={styles.helpText}>
+                  Total maximum number of people this event can support across all pricing variations.
+                </span>
               </label>
             </div>
 
@@ -600,6 +603,18 @@ export default function AdminEvents() {
 
           <div style={styles.card}>
             <div style={styles.sectionHead}>Pricing Variations</div>
+              <div style={styles.infoBox}>
+                <div style={styles.helpTitle}>How pricing variations work</div>
+                <div style={styles.helpText}>
+                  A variation is available only if both rules are true:
+                </div>
+                <div style={styles.helpText}>
+                  1. Its own <b>Capacity</b> still has room.
+                </div>
+                <div style={styles.helpText}>
+                  2. The event still has enough remaining <b>Max Participants</b> for that variation’s <b>Participants Count</b>.
+                </div>
+              </div>
 
             <div style={{ display: "grid", gap: 10 }}>
               {form.variations.map((v, idx) => (
@@ -635,6 +650,9 @@ export default function AdminEvents() {
                         value={v.capacity}
                         onChange={(e) => updateVariation(idx, { capacity: e.target.value })}
                       />
+                      <span style={styles.helpText}>
+                        Maximum number of this package/variation that can be sold for the event.
+                      </span>
                     </label>
 
                     <label style={styles.label}>
@@ -648,6 +666,9 @@ export default function AdminEvents() {
                           updateVariation(idx, { participantsCount: e.target.value })
                         }
                       />
+                      <span style={styles.helpText}>
+                        Number of people this package counts toward the event’s Max Participants each time it is sold.
+                      </span>
                     </label>
                   </div>
 
@@ -1013,4 +1034,23 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 12,
     padding: 12,
   },
+  helpText: {
+  color: "#6b7280",
+  fontSize: 12,
+  lineHeight: 1.4,
+},
+helpTitle: {
+  fontWeight: 700,
+  fontSize: 13,
+  marginBottom: 4,
+},
+infoBox: {
+  marginBottom: 12,
+  padding: 12,
+  borderRadius: 12,
+  background: "#f9fafb",
+  border: "1px solid #e5e7eb",
+  display: "grid",
+  gap: 4,
+},
 };
