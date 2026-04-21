@@ -144,6 +144,9 @@ export default function EventDetailPage() {
       <div style={styles.topActions}>
         <Link to="/" style={styles.brandLink}>Bluewater Escapes</Link>
         <div style={styles.actionGroup}>
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <button style={styles.btn}>Calendar</button>
+        </Link>
         <Link to="/events" style={{ textDecoration: "none" }}>
           <button style={styles.btn}>Back to Events</button>
         </Link>

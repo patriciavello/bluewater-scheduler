@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -158,9 +159,19 @@ export default function MaintenanceRequest() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <h2 style={{ marginTop: 0 }}>Maintenance Request</h2>
-        <div style={{ opacity: 0.75, marginBottom: 14 }}>
-          Report one or more boat problems for admin review.
+        <div style={styles.headerRow}>
+          <div>
+            <h2 style={{ margin: 0 }}>Maintenance Request</h2>
+            <div style={{ opacity: 0.75, marginTop: 4 }}>
+              Report one or more boat problems for admin review.
+            </div>
+          </div>
+
+          <Link to="/account" style={{ textDecoration: "none" }}>
+            <button type="button" style={styles.btn}>
+              My Account
+            </button>
+          </Link>
         </div>
 
         <form onSubmit={submit} style={styles.card}>
@@ -329,6 +340,14 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     maxWidth: 900,
     margin: "0 auto",
+  },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+    flexWrap: "wrap",
+    marginBottom: 14,
   },
   card: {
     border: "1px solid #e5e7eb",

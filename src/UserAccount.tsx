@@ -22,6 +22,10 @@ type Me = {
   is_goldmember: boolean;
   is_captain: boolean;
   is_technician?: boolean;
+  is_supervisor?: boolean;
+  is_admin?: boolean;
+  isAdmin?: boolean;
+  isSupervisor?: boolean;
 };
 
 type MyReservation = {
@@ -548,6 +552,14 @@ export default function UserAccount() {
   const visibleReservations = resvs
     .filter((r) => String(r.status).toUpperCase() !== "OPEN")
     .filter((r) => (hidePastReservations ? !isPastReservation(r) : true));
+  const canRequestMaintenance =
+    !!me.is_goldmember ||
+    !!me.is_captain ||
+    !!me.is_technician ||
+    !!me.is_supervisor ||
+    !!me.isSupervisor ||
+    !!me.is_admin ||
+    !!me.isAdmin;
 
   return (
     <div style={styles.page}>
@@ -608,12 +620,13 @@ export default function UserAccount() {
         <a href="/events" style={{ textDecoration: "none" }}>
            <button style={styles.btn}>Events</button>
         </a>    
-              {/*add a button for maitenance request*/}
-      <a href="/maintenance/request" style={{ textDecoration: "none" }}>
-        <button style={styles.btn}>
-          + Maintenance request
-        </button>
-      </a>
+      {canRequestMaintenance && (
+        <a href="/maintenance/request" style={{ textDecoration: "none" }}>
+          <button style={styles.btn}>
+            + Maintenance request
+          </button>
+        </a>
+      )}
       {/* Technician dashboard link, only visible to technicians */}
       {me?.is_technician && (
         <button

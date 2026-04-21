@@ -89,9 +89,14 @@ export default function EventsListPage() {
     <div style={styles.page}>
       <div style={styles.nav}>
         <Link to="/" style={styles.brandLink}>Bluewater Escapes</Link>
-        <Link to="/account" style={{ textDecoration: "none" }}>
-          <button style={styles.navButton}>My Account</button>
-        </Link>
+        <div style={styles.navActions}>
+          <Link to="/" style={{ textDecoration: "none" }}>
+            <button style={styles.navButton}>Calendar</button>
+          </Link>
+          <Link to="/account" style={{ textDecoration: "none" }}>
+            <button style={styles.navButton}>My Account</button>
+          </Link>
+        </div>
       </div>
 
       <div style={styles.header}>
@@ -164,6 +169,12 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 16,
     paddingBottom: 18,
     borderBottom: "1px solid #d8e8e8",
+  },
+  navActions: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
   },
   brandLink: {
     color: "#123047",

@@ -176,9 +176,21 @@ class ManualPdf:
         w: float,
         h: float,
     ) -> None:
+        image_w, image_h = jpeg_dimensions(path)
+        image_ratio = image_w / image_h
+        box_ratio = w / h
+        draw_w = w
+        draw_h = h
+        if image_ratio > box_ratio:
+            draw_h = w / image_ratio
+        else:
+            draw_w = h * image_ratio
+        draw_x = x + (w - draw_w) / 2
+        draw_y = y + (h - draw_h) / 2
+
         page.rect(x - 4, y - 4, w + 8, h + 24, WHITE)
         page.stroke_rect(x - 4, y - 4, w + 8, h + 24, LINE)
-        page.image(path, x, y, w, h)
+        page.image(path, draw_x, draw_y, draw_w, draw_h)
         page.rect(x, y + h - 18, w, 18, NAVY)
         page.text(x + 10, y + h - 13, f"Printscreen: {label}", 8.5, "F2", WHITE)
 
@@ -189,10 +201,10 @@ class ManualPdf:
         label, path = available[self.screenshot_index % len(available)]
         self.screenshot_index += 1
         image_w = PAGE_W - (MARGIN_X * 2)
-        image_h = 118
+        image_h = 250
         y0 = PAGE_H - MARGIN_TOP - image_h
         self._draw_screenshot_panel(self.page, label, path, MARGIN_X, y0, image_w, image_h)
-        self.y = y0 - 26
+        self.y = y0 - 18
 
     def cover(self) -> None:
         p = self.page
@@ -212,7 +224,7 @@ class ManualPdf:
         p.text(76, PAGE_H - 386, f"Prepared {self.date}", 11, "F1", MUTED)
         cover_image = "docs/screenshots/home.jpg"
         if os.path.exists(cover_image):
-            self._draw_screenshot_panel(p, "Home schedule", cover_image, 54, 160, PAGE_W - 108, 140)
+            self._draw_screenshot_panel(p, "Home schedule", cover_image, 54, 112, PAGE_W - 108, 300)
         p.text(54, 96, "Customer workflow guide", 11, "F2", TEAL)
         self.add_page()
 
@@ -233,9 +245,9 @@ class ManualPdf:
                 "Experiences",
                 toc_image,
                 MARGIN_X,
-                74,
+                58,
                 PAGE_W - (MARGIN_X * 2),
-                106,
+                210,
             )
         self.add_page()
         self.screenshot_headers = True
