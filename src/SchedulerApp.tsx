@@ -183,11 +183,11 @@ function UiButton({
   className?: string;
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-white/30";
+    "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-600/25";
   const styles =
     variant === "primary"
-      ? "bg-white text-slate-900 hover:bg-white/90"
-      : "bg-white/10 text-white ring-1 ring-white/15 hover:bg-white/15";
+      ? "bg-[#cfa35a] text-white shadow-sm hover:bg-[#b9893e]"
+      : "bg-white text-[#123047] ring-1 ring-[#d8e8e8] hover:bg-[#f4fbfb]";
   return (
     <button type="button" onClick={onClick} className={cx(base, styles, className)}>
       {children}
@@ -601,81 +601,93 @@ export default function SchedulerApp() {
   
 
   return (
-    <div className="min-h-screen bg-sky-950 text-white">
+    <div className="min-h-screen bg-[#f7fbfb] text-[#123047]">
       {/* Hero */}
-      <div className="relative">
+      <div className="relative overflow-hidden bg-[#0b3147]">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=2400&q=80"
             alt="Ocean"
-            className="h-[10px] w-full object-cover opacity-85"
+            className="h-full w-full object-cover opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-sky-950/80 via-sky-950/55 to-sky-950" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08283d]/90 via-[#123047]/60 to-[#0b3147]/30" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#f7fbfb] to-transparent" />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-10 sm:px-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-5 sm:px-6 sm:pb-16">
+        <div className="flex items-center justify-between gap-4 border-b border-white/20 pb-5">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="text-left text-lg font-semibold tracking-wide text-white"
+          >
+            Bluewater Escapes
+          </button>
+          <div className="flex items-center gap-2">
+            <UiButton onClick={() => navigate("/events")}>
+              Experiences
+            </UiButton>
+            <UiButton variant="primary" onClick={() => navigate("/account")}>
+              My Account
+            </UiButton>
+          </div>
+        </div>
+
+        <div className="mt-14 max-w-3xl pb-8 sm:mt-20">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80 ring-1 ring-white/15">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/85 ring-1 ring-white/20">
               <Ship className="h-4 w-4" />
-              Boat Charter Scheduler
+              Private Yacht Scheduling
             </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Plan your next escape <span className="text-white/80">in one view</span>
+            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-normal text-white sm:text-6xl">
+              Plan your next escape on the water.
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/85">
               Filter your fleet, pick a start date and duration, then scan availability across the next 14 days. Click any boat
               name for details and to complete your reservation online.
             </p>
-            <div className="mt-2 text-xs text-white/55">
-              API: <span className="font-mono">{API_BASE}</span>
-            </div>
 
             {errorMsg ? (
-              <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-100 ring-1 ring-red-200/20">
+              <div className="mt-4 rounded-xl bg-red-500/15 px-3 py-2 text-xs text-red-50 ring-1 ring-red-200/20">
                 {errorMsg}
               </div>
             ) : null}
           </div>
-
-          <UiButton onClick={() => navigate("/account")}>
-            My Account
-          </UiButton>
         </div>
 
           {/* Filters */}
-          <Card className="mt-6 overflow-hidden bg-white/10 ring-1 ring-white/15 backdrop-blur-md">
+          <Card className="mt-6 overflow-hidden bg-white/95 shadow-2xl shadow-cyan-950/20 ring-1 ring-cyan-900/10 backdrop-blur-md">
             <div className="p-4 sm:p-5">
               <div className="grid gap-4 md:grid-cols-12">
                 <div className="md:col-span-3">
-                  <div className="text-xs text-white/70">Start date</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[#5b7583]">Start date</div>
                   <input
                     type="date"
                     value={startDateStr}
                     onChange={(e) => setStartDateStr(e.target.value)}
-                    className="mt-1 w-full rounded-xl bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 ring-1 ring-white/15 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    className="mt-1 w-full rounded-lg bg-[#f7fbfb] px-3 py-2 text-sm text-[#123047] ring-1 ring-[#d8e8e8] focus:outline-none focus:ring-2 focus:ring-[#5db2bf]/35"
                   />
-                  <div className="mt-1 text-[11px] text-white/55">
+                  <div className="mt-1 text-[11px] text-[#6f8590]">
                     Empty = next Sunday ({toISODate(nextSunday(new Date()))})
                   </div>
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="text-xs text-white/70">Duration (days)</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[#5b7583]">Duration (days)</div>
                   <input
                     inputMode="numeric"
                     value={durationStr}
                     onChange={(e) => setDurationStr(e.target.value.replace(/[^0-9]/g, ""))}
-                    className="mt-1 w-full rounded-xl bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 ring-1 ring-white/15 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    className="mt-1 w-full rounded-lg bg-[#f7fbfb] px-3 py-2 text-sm text-[#123047] placeholder:text-[#7c939c] ring-1 ring-[#d8e8e8] focus:outline-none focus:ring-2 focus:ring-[#5db2bf]/35"
                     placeholder="1"
                   />
-                  <div className="mt-1 text-[11px] text-white/55">Empty = 1 day</div>
+                  <div className="mt-1 text-[11px] text-[#6f8590]">Empty = 1 day</div>
                 </div>
 
                 <div className="md:col-span-7">
                   <div className="flex items-center justify-between">
-                    <div className="text-xs text-white/70">My boats</div>
-                    <button type="button" onClick={clearBoats} className="text-[11px] text-white/60 hover:text-white">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-[#5b7583]">My boats</div>
+                    <button type="button" onClick={clearBoats} className="text-[11px] font-semibold text-[#2f7c8a] hover:text-[#123047]">
                       Clear
                     </button>
                   </div>
@@ -689,8 +701,8 @@ export default function SchedulerApp() {
                           type="button"
                           onClick={() => toggleBoat(b.id)}
                           className={cx(
-                            "rounded-full px-3 py-1 text-xs ring-1 transition",
-                            active ? "bg-white text-slate-950 ring-white" : "bg-white/10 text-white ring-white/15 hover:bg-white/15"
+                            "rounded-full px-3 py-1 text-xs font-semibold ring-1 transition",
+                            active ? "bg-[#123047] text-white ring-[#123047]" : "bg-[#f7fbfb] text-[#39576a] ring-[#d8e8e8] hover:bg-white"
                           )}
                         >
                           {b.name}
@@ -699,10 +711,10 @@ export default function SchedulerApp() {
                     })}
                   </div>
 
-                  <div className="mt-2 flex items-center gap-2 text-[11px] text-white/55">
+                  <div className="mt-2 flex items-center gap-2 text-[11px] text-[#6f8590]">
                     <Search className="h-3.5 w-3.5" />
                     Showing boats that have at least one available window ≥{" "}
-                    <span className="font-semibold text-white/70">{durationDays}</span> day(s) in this 14-day view.
+                    <span className="font-semibold text-[#123047]">{durationDays}</span> day(s) in this 14-day view.
                   </div>
                 </div>
               </div>
@@ -712,18 +724,18 @@ export default function SchedulerApp() {
       </div>
 
       {/* Schedule header banner */}
-      <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
-        <div className="mt-6 overflow-hidden rounded-2xl ring-1 ring-white/10">
+      <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6">
+        <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-lg shadow-cyan-950/10 ring-1 ring-[#d8e8e8]">
           <div className="relative">
             <img
               src="https://www.visitfortmyers.com/sites/default/files/styles/low_profile_image_hero_mobile_375x256_/public/2021-12/amy_in_florida-Instagram-2653-ig-18030604084285766.jpg.webp?itok=YqtFTvbp"
               alt="Boca Grande Beach"
               className="h-28 w-full object-cover opacity-90 sm:h-32"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-sky-950/85 via-sky-950/55 to-sky-950/85" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0b3147]/90 via-[#0b3147]/55 to-[#0b3147]/25" />
             <div className="relative flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div>
-                <div className="text-sm font-medium text-white">14-day schedule</div>
+                <div className="text-sm font-semibold text-white">Find Your Escape</div>
                 <div className="text-xs text-white/70">
                   Starting <span className="font-semibold text-white/85">{formatMonDay(scheduleStart)}</span> • Duration filter:{" "}
                   {durationDays} day(s) {loading ? "• Loading..." : ""}
@@ -745,10 +757,10 @@ export default function SchedulerApp() {
         </div>
 
         {/* Schedule grid */}
-        <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-white/10">
+        <div className="mt-4 overflow-x-auto rounded-2xl bg-white shadow-lg shadow-cyan-950/10 ring-1 ring-[#d8e8e8]">
           <div className="min-w-[980px]">
-            <div className="grid grid-cols-[260px_repeat(14,1fr)] border-b border-white/10">
-              <div className="p-3 text-xs text-white/60">Boat</div>
+            <div className="grid grid-cols-[260px_repeat(14,1fr)] border-b border-[#d8e8e8] bg-[#f7fbfb]">
+              <div className="p-3 text-xs font-semibold uppercase tracking-wide text-[#5b7583]">Boat</div>
 
               {days.map((d) => {
                 const inWin = isInSelectedWindow(d);
@@ -759,14 +771,14 @@ export default function SchedulerApp() {
                     key={iso}
                     className={cx(
                       "p-3 text-center transition",
-                      inWin ? "bg-white/10" : "opacity-45",
-                      isSameDay(d, new Date()) ? "bg-white/15" : ""
+                      inWin ? "bg-[#e9f6f7]" : "opacity-55",
+                      isSameDay(d, new Date()) ? "bg-[#d7eef0]" : ""
                     )}
                   >
-                    <div className={cx("text-[11px]", inWin ? "text-white/70" : "text-white/40")}>
+                    <div className={cx("text-[11px]", inWin ? "text-[#5b7583]" : "text-[#8fa1a9]")}>
                       {formatDow(d)}
                     </div>
-                    <div className={cx("text-xs font-medium", inWin ? "text-white" : "text-white/50")}>
+                    <div className={cx("text-xs font-semibold", inWin ? "text-[#123047]" : "text-[#8fa1a9]")}>
                       {formatMonDay(d)}
                     </div>
                   </div>
@@ -775,14 +787,14 @@ export default function SchedulerApp() {
             </div>
 
             {boatsFiltered.length === 0 ? (
-              <div className="p-6 text-sm text-white/70">No boats match the current filters in this 14-day window.</div>
+              <div className="p-6 text-sm text-[#5b7583]">No boats match the current filters in this 14-day window.</div>
             ) : (
               boatsFiltered.map((b) => {
                 const r = reservationsByBoat[b.id] || [];
                 return (
                   <div
                     key={b.id}
-                    className="grid grid-cols-[260px_repeat(14,1fr)] border-b border-white/10 last:border-b-0"
+                    className="grid grid-cols-[260px_repeat(14,1fr)] border-b border-[#e1eeee] last:border-b-0"
                   >
                       <div className="flex items-center gap-3 p-3">
                         <div className="flex min-w-0 flex-col">
@@ -799,15 +811,15 @@ export default function SchedulerApp() {
 
                               setModalBoatId(b.id);
                             }}
-                            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-left text-sm font-medium text-white ring-1 ring-white/15 hover:bg-white/15"
+                            className="inline-flex items-center gap-2 rounded-lg bg-[#f7fbfb] px-3 py-2 text-left text-sm font-semibold text-[#123047] ring-1 ring-[#d8e8e8] hover:bg-white"
                           >
                             <span className="truncate">{b.name}</span>
-                            <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70 ring-1 ring-white/10">
+                            <span className="ml-1 rounded-full bg-[#e9f6f7] px-2 py-0.5 text-[10px] text-[#2f7c8a] ring-1 ring-[#d8e8e8]">
                               {b.type || "Boat"}
                             </span>
                           </button>
 
-                          <div className="mt-1 pl-1 text-xs text-white/65">
+                          <div className="mt-1 pl-1 text-xs text-[#6f8590]">
                             ${Number(b.price_per_day || 0).toFixed(2)}/day
                           </div>
                         </div>
@@ -847,19 +859,19 @@ export default function SchedulerApp() {
                                 ? cx(
                                     "ring-1",
                                     isEvent
-                                      ? "bg-violet-400/30 ring-violet-300/40 cursor-pointer hover:bg-violet-400/40"
+                                      ? "bg-[#d9f0f3] ring-[#5db2bf]/35 cursor-pointer hover:bg-[#cdecee]"
                                       : clickable
-                                      ? "bg-white/6 ring-white/15 hover:bg-white/10 cursor-pointer"
-                                      : "bg-white/12 ring-white/15",
-                                    !booked && durationDays > 1 && fit ? "ring-2 ring-white/25" : ""
+                                      ? "bg-[#f8fcfc] ring-[#d8e8e8] hover:bg-[#edf8f8] cursor-pointer"
+                                      : "bg-[#eef1f1] ring-[#d8e8e8]",
+                                    !booked && durationDays > 1 && fit ? "ring-2 ring-[#5db2bf]/45" : ""
                                   )
                                 : cx(
                                     "ring-0",
                                     isEvent
-                                      ? "bg-violet-400/20 cursor-pointer hover:bg-violet-400/30"
+                                      ? "bg-[#d9f0f3]/70 cursor-pointer hover:bg-[#cdecee]"
                                       : clickable
-                                      ? "bg-white/3 cursor-pointer"
-                                      : "bg-white/8"    
+                                      ? "bg-[#f8fcfc] cursor-pointer"
+                                      : "bg-[#eef1f1]"    
                                   )
                             )}
                             title={
@@ -878,12 +890,12 @@ export default function SchedulerApp() {
                                   inWin
                                     ? booked
                                       ? isEvent
-                                        ? "text-violet-100"
-                                        : "text-white/70"
-                                      : "text-white/80"
+                                        ? "text-[#1f6f7b]"
+                                        : "text-[#6f8590]"
+                                      : "text-[#2f7c8a]"
                                     : isEvent
-                                    ? "text-violet-200/80"
-                                    : "text-white/45"
+                                    ? "text-[#2f7c8a]/70"
+                                    : "text-[#8fa1a9]"
                                 )}
                               >
                                 {label}

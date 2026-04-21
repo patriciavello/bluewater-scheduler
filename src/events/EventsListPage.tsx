@@ -50,9 +50,9 @@ function toDisplayRange(startDate: string, endExclusive: string) {
 }
 
 function eventTypeLabel(type?: string) {
-  if (type === "TRAINING") return "🎓 Training";
-  if (type === "FLOTILLA") return "⛵ Flotilla";
-  if (type === "SAILING_TOUR") return "🌊 Sailing Tour";
+  if (type === "TRAINING") return "Training";
+  if (type === "FLOTILLA") return "Flotilla";
+  if (type === "SAILING_TOUR") return "Sailing Tour";
   return type || "Event";
 }
 
@@ -87,10 +87,18 @@ export default function EventsListPage() {
 
   return (
     <div style={styles.page}>
+      <div style={styles.nav}>
+        <Link to="/" style={styles.brandLink}>Bluewater Escapes</Link>
+        <Link to="/account" style={{ textDecoration: "none" }}>
+          <button style={styles.navButton}>My Account</button>
+        </Link>
+      </div>
+
       <div style={styles.header}>
-        <h2 style={{ margin: 0 }}>Upcoming Events</h2>
+        <div style={styles.eyebrow}>Experiences</div>
+        <h1 style={styles.title}>Find Your Escape</h1>
         <div style={styles.subtle}>
-          Join a flotilla, sailing tour or training event on fixed dates.
+          Join a flotilla, sailing tour or training event on fixed dates, with the same calm booking flow as your charter schedule.
         </div>
       </div>
 
@@ -113,7 +121,7 @@ export default function EventsListPage() {
               ) : null}
 
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                <div style={{ fontWeight: 900, fontSize: 18 }}>{event.title}</div>
+                <div style={{ fontWeight: 800, fontSize: 20, color: "#123047" }}>{event.title}</div>
                 <div style={styles.typeBadge}>{eventTypeLabel(event.eventType)}</div>
               </div>
 
@@ -142,68 +150,114 @@ export default function EventsListPage() {
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
-    maxWidth: 1100,
+    maxWidth: 1120,
     margin: "0 auto",
-    padding: 16,
+    padding: "24px 18px 56px",
     display: "grid",
+    gap: 22,
+    color: "#123047",
+  },
+  nav: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: 16,
+    paddingBottom: 18,
+    borderBottom: "1px solid #d8e8e8",
+  },
+  brandLink: {
+    color: "#123047",
+    fontWeight: 800,
+    fontSize: 20,
+    textDecoration: "none",
+    letterSpacing: 0.2,
+  },
+  navButton: {
+    padding: "10px 16px",
+    borderRadius: 999,
+    border: "1px solid #d8e8e8",
+    background: "white",
+    color: "#123047",
+    cursor: "pointer",
+    fontWeight: 700,
   },
   header: {
     display: "grid",
-    gap: 4,
+    gap: 8,
+    padding: "42px 0 18px",
+  },
+  eyebrow: {
+    color: "#2f7c8a",
+    fontSize: 12,
+    fontWeight: 800,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+  },
+  title: {
+    margin: 0,
+    fontSize: "clamp(36px, 6vw, 66px)",
+    lineHeight: 1.02,
+    fontWeight: 800,
+    color: "#123047",
   },
   subtle: {
-    color: "#6b7280",
-    fontSize: 14,
+    color: "#5b7583",
+    fontSize: 16,
+    lineHeight: 1.65,
+    maxWidth: 720,
   },
   msg: {
     padding: 12,
     borderRadius: 12,
-    background: "#f3f4f6",
+    background: "#eef8f8",
+    border: "1px solid #d8e8e8",
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: 16,
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: 18,
   },
   card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 16,
+    border: "1px solid #d8e8e8",
+    borderRadius: 8,
     padding: 14,
     background: "white",
     display: "grid",
-    gap: 10,
+    gap: 12,
+    boxShadow: "0 18px 45px rgba(18, 48, 71, 0.08)",
   },
   image: {
     width: "100%",
-    height: 180,
+    height: 220,
     objectFit: "cover",
-    borderRadius: 12,
+    borderRadius: 6,
   },
   typeBadge: {
-    padding: "4px 8px",
+    padding: "5px 10px",
     borderRadius: 999,
-    background: "#eef2ff",
-    color: "#4338ca",
-    fontWeight: 700,
+    background: "#e9f6f7",
+    color: "#1f6f7b",
+    fontWeight: 800,
     fontSize: 12,
     whiteSpace: "nowrap",
   },
   subtleLine: {
-    color: "#6b7280",
+    color: "#5b7583",
     fontSize: 13,
   },
   description: {
     fontSize: 14,
-    color: "#111827",
+    color: "#39576a",
+    lineHeight: 1.55,
   },
   primary: {
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid #111827",
-    background: "#111827",
+    padding: "12px 16px",
+    borderRadius: 999,
+    border: "1px solid #cfa35a",
+    background: "#cfa35a",
     color: "white",
     cursor: "pointer",
-    fontWeight: 700,
+    fontWeight: 800,
+    width: "100%",
   },
 };

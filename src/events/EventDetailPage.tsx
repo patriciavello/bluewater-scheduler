@@ -63,9 +63,9 @@ function toDisplayRange(startDate: string, endExclusive: string) {
 }
 
 function eventTypeLabel(type?: string) {
-  if (type === "TRAINING") return "🎓 Training";
-  if (type === "FLOTILLA") return "⛵ Flotilla";
-  if (type === "SAILING_TOUR") return "🌊 Sailing Tour";
+  if (type === "TRAINING") return "Training";
+  if (type === "FLOTILLA") return "Flotilla";
+  if (type === "SAILING_TOUR") return "Sailing Tour";
   return type || "Event";
 }
 
@@ -142,12 +142,15 @@ export default function EventDetailPage() {
   return (
     <div style={styles.page}>
       <div style={styles.topActions}>
+        <Link to="/" style={styles.brandLink}>Bluewater Escapes</Link>
+        <div style={styles.actionGroup}>
         <Link to="/events" style={{ textDecoration: "none" }}>
-          <button style={styles.btn}>← Back to Events</button>
+          <button style={styles.btn}>Back to Events</button>
         </Link>
         <Link to="/account" style={{ textDecoration: "none" }}>
           <button style={styles.btn}>My Account</button>
         </Link>
+        </div>
       </div>
 
       {msg ? <div style={styles.msg}>{msg}</div> : null}
@@ -165,7 +168,10 @@ export default function EventDetailPage() {
 
             <div style={styles.heroContent}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <h2 style={{ margin: 0 }}>{event.title}</h2>
+                <div>
+                  <div style={styles.eyebrow}>Experience</div>
+                  <h1 style={styles.title}>{event.title}</h1>
+                </div>
                 <div style={styles.typeBadge}>{eventTypeLabel(event.eventType)}</div>
               </div>
 
@@ -243,123 +249,164 @@ export default function EventDetailPage() {
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
-    maxWidth: 1000,
+    maxWidth: 1120,
     margin: "0 auto",
-    padding: 16,
+    padding: "24px 18px 56px",
     display: "grid",
-    gap: 16,
+    gap: 22,
+    color: "#123047",
   },
   topActions: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+    paddingBottom: 18,
+    borderBottom: "1px solid #d8e8e8",
+  },
+  brandLink: {
+    color: "#123047",
+    fontWeight: 800,
+    fontSize: 20,
+    textDecoration: "none",
+    letterSpacing: 0.2,
+  },
+  actionGroup: {
     display: "flex",
     gap: 10,
     flexWrap: "wrap",
   },
   btn: {
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid #d1d5db",
+    padding: "10px 16px",
+    borderRadius: 999,
+    border: "1px solid #d8e8e8",
     background: "white",
+    color: "#123047",
     cursor: "pointer",
+    fontWeight: 700,
   },
   msg: {
     padding: 12,
     borderRadius: 12,
-    background: "#f3f4f6",
+    background: "#eef8f8",
+    border: "1px solid #d8e8e8",
   },
   subtle: {
-    color: "#6b7280",
+    color: "#5b7583",
     fontSize: 14,
   },
   heroCard: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 16,
+    border: "1px solid #d8e8e8",
+    borderRadius: 8,
     overflow: "hidden",
     background: "white",
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))",
+    boxShadow: "0 22px 55px rgba(18, 48, 71, 0.1)",
   },
   heroImage: {
     width: "100%",
     height: "100%",
-    minHeight: 260,
+    minHeight: 430,
     objectFit: "cover",
   },
   heroContent: {
-    padding: 16,
+    padding: 30,
     display: "grid",
-    gap: 10,
+    gap: 14,
+    alignContent: "center",
+  },
+  eyebrow: {
+    color: "#2f7c8a",
+    fontSize: 12,
+    fontWeight: 800,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  title: {
+    margin: 0,
+    fontSize: "clamp(34px, 5vw, 58px)",
+    lineHeight: 1.03,
+    fontWeight: 800,
+    color: "#123047",
   },
   typeBadge: {
-    padding: "4px 8px",
+    padding: "6px 10px",
     borderRadius: 999,
-    background: "#eef2ff",
-    color: "#4338ca",
-    fontWeight: 700,
+    background: "#e9f6f7",
+    color: "#1f6f7b",
+    fontWeight: 800,
     fontSize: 12,
     whiteSpace: "nowrap",
+    alignSelf: "start",
   },
   subtleLine: {
-    color: "#6b7280",
+    color: "#5b7583",
     fontSize: 14,
   },
   description: {
-    color: "#111827",
+    color: "#39576a",
     fontSize: 15,
+    lineHeight: 1.65,
   },
   noteBox: {
     marginTop: 8,
     padding: 12,
-    borderRadius: 12,
-    background: "#f9fafb",
-    border: "1px solid #e5e7eb",
-    color: "#374151",
+    borderRadius: 8,
+    background: "#f7fbfb",
+    border: "1px solid #d8e8e8",
+    color: "#39576a",
   },
   section: {
     display: "grid",
-    gap: 12,
+    gap: 14,
   },
   sectionTitle: {
     fontWeight: 900,
-    fontSize: 20,
+    fontSize: 28,
+    color: "#123047",
   },
   variationGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: 16,
   },
   variationCard: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 16,
-    padding: 14,
+    border: "1px solid #d8e8e8",
+    borderRadius: 8,
+    padding: 18,
     background: "white",
     display: "grid",
-    gap: 10,
+    gap: 12,
+    boxShadow: "0 16px 38px rgba(18, 48, 71, 0.08)",
   },
   priceBadge: {
-    padding: "4px 8px",
+    padding: "5px 10px",
     borderRadius: 999,
-    background: "#ecfdf5",
-    color: "#166534",
+    background: "#fff6e5",
+    color: "#956b25",
     fontWeight: 800,
     fontSize: 12,
     whiteSpace: "nowrap",
   },
   primary: {
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid #111827",
-    background: "#111827",
+    padding: "12px 16px",
+    borderRadius: 999,
+    border: "1px solid #cfa35a",
+    background: "#cfa35a",
     color: "white",
     cursor: "pointer",
-    fontWeight: 700,
+    fontWeight: 800,
   },
   disabledBtn: {
-    padding: "10px 12px",
-    borderRadius: 12,
-    border: "1px solid #d1d5db",
-    background: "#e5e7eb",
-    color: "#6b7280",
+    padding: "12px 16px",
+    borderRadius: 999,
+    border: "1px solid #d8e8e8",
+    background: "#eef1f1",
+    color: "#6f8590",
     cursor: "not-allowed",
-    fontWeight: 700,
+    fontWeight: 800,
   },
 };
