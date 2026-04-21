@@ -108,7 +108,7 @@ export default function EventDetailPage() {
     setMsg("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/events/${id}/book`, {
+      const res = await fetch(`${API_BASE}/api/events/${id}/create-checkout-session`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -127,8 +127,11 @@ export default function EventDetailPage() {
         throw new Error(data.error || "Booking failed");
       }
 
-      setMsg("Booking created ✅");
-      await loadEvent();
+      if (!data.url) {
+        throw new Error("Missing checkout URL");
+      }
+
+      window.location.href = data.url;
     } catch (e: any) {
       setMsg(e?.message || "Booking failed");
     } finally {
