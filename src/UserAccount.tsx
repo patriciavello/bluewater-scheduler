@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
+const USER_MANUAL_URL = "/regular-user-manual.pdf";
 
 //find route Status: 
 
@@ -407,12 +408,19 @@ export default function UserAccount() {
   if (!me) {
     return (
       <div style={styles.page}>
-        <h2 style={{ margin: 0 }}>My Account</h2>
-        <div style={{ opacity: 0.7, marginTop: 4 }}>
-          {mode === "login"
-            ? "Sign in to manage your profile and reservations."
-            : "Create your account to request and manage reservations."}
+        <div style={styles.headerRow}>
+          <div>
+            <h2 style={{ margin: 0 }}>My Account</h2>
+            <div style={{ opacity: 0.7, marginTop: 4 }}>
+              {mode === "login"
+                ? "Sign in to manage your profile and reservations."
+                : "Create your account to request and manage reservations."}
+            </div>
+          </div>
+
+          <ManualDownloadButton />
         </div>
+
 
         {/* Toggle */}
         <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
@@ -543,7 +551,7 @@ export default function UserAccount() {
 
   return (
     <div style={styles.page}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+      <div style={styles.headerRow}>
         <div>
           <h2 style={{ margin: 0 }}>My Account</h2>
           <div style={{ opacity: 0.75, marginTop: 4 }}>
@@ -554,6 +562,7 @@ export default function UserAccount() {
         </div>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <ManualDownloadButton />
           <button style={styles.btn} onClick={logout} disabled={loading}>
             Log out
           </button>
@@ -740,6 +749,14 @@ export default function UserAccount() {
         </div>
       )}
     </div>
+  );
+}
+
+function ManualDownloadButton() {
+  return (
+    <a href={USER_MANUAL_URL} download style={styles.manualBtn}>
+      Download User Manual
+    </a>
   );
 }
 
@@ -1102,10 +1119,12 @@ function EventBookingCard({ b }: { b: MyEventBooking }) {
 
 const styles: Record<string, React.CSSProperties> = {
   page: { maxWidth: 1000, margin: "0 auto", padding: 16, fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial" },
+  headerRow: { display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "flex-start" },
   card: { border: "1px solid #e5e7eb", borderRadius: 14, padding: 14, background: "white" },
   label: { display: "grid", gap: 6, fontSize: 13 },
   input: { padding: 10, borderRadius: 10, border: "1px solid #d1d5db" },
   btn: { padding: "10px 12px", borderRadius: 12, border: "1px solid #d1d5db", background: "white", cursor: "pointer" },
+  manualBtn: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: 12, border: "1px solid #2f7c8a", background: "#e9f6f7", color: "#123047", cursor: "pointer", fontWeight: 700, textDecoration: "none" },
   primary: { padding: "10px 12px", borderRadius: 12, border: "1px solid #111827", background: "#111827", color: "white", cursor: "pointer", fontWeight: 700 },
   msg: { padding: 12, borderRadius: 12, background: "#f3f4f6" },
   grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 },
