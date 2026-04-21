@@ -9,7 +9,7 @@ type EventItem = {
   boatId: string;
   boatName: string;
   title: string;
-  eventType: "TRAINING" | "FLOTILLA";
+  eventType: "TRAINING" | "FLOTILLA" | "SAILING_TOUR";
   description?: string | null;
   imageUrl?: string | null;
   startDate: string;
@@ -49,6 +49,13 @@ function toDisplayRange(startDate: string, endExclusive: string) {
   return `${start} → ${end.toISOString().slice(0, 10)}`;
 }
 
+function eventTypeLabel(type?: string) {
+  if (type === "TRAINING") return "🎓 Training";
+  if (type === "FLOTILLA") return "⛵ Flotilla";
+  if (type === "SAILING_TOUR") return "🌊 Sailing Tour";
+  return type || "Event";
+}
+
 export default function EventsListPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,7 +90,7 @@ export default function EventsListPage() {
       <div style={styles.header}>
         <h2 style={{ margin: 0 }}>Upcoming Events</h2>
         <div style={styles.subtle}>
-          Join a flotilla or training event on fixed dates.
+          Join a flotilla, sailing tour or training event on fixed dates.
         </div>
       </div>
 
@@ -107,7 +114,7 @@ export default function EventsListPage() {
 
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <div style={{ fontWeight: 900, fontSize: 18 }}>{event.title}</div>
-                <div style={styles.typeBadge}>{event.eventType}</div>
+                <div style={styles.typeBadge}>{eventTypeLabel(event.eventType)}</div>
               </div>
 
               <div style={styles.subtleLine}>{event.boatName}</div>

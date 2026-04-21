@@ -9,7 +9,7 @@ type EventItem = {
   boatId: string;
   boatName: string;
   title: string;
-  eventType: "TRAINING" | "FLOTILLA";
+  eventType: "TRAINING" | "FLOTILLA" | "SAILING_TOUR";
   description?: string | null;
   imageUrl?: string | null;
   startDate: string;
@@ -60,6 +60,23 @@ function toDisplayRange(startDate: string, endExclusive: string) {
   if (!end) return `${start} → Unknown date`;
   end.setDate(end.getDate() - 1);
   return `${start} → ${end.toISOString().slice(0, 10)}`;
+}
+
+async function safeJson(res: Response) {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return {};
+  }
+}
+
+
+function eventTypeLabel(type?: string) {
+  if (type === "TRAINING") return "🎓 Training";
+  if (type === "FLOTILLA") return "⛵ Flotilla";
+  if (type === "SAILING_TOUR") return "🌊 Sailing Tour";
+  return type || "Event";
 }
 
 export default function EventDetailPage() {
@@ -156,7 +173,7 @@ export default function EventDetailPage() {
             <div style={styles.heroContent}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
                 <h2 style={{ margin: 0 }}>{event.title}</h2>
-                <div style={styles.typeBadge}>{event.eventType}</div>
+                <div style={styles.typeBadge}>{eventTypeLabel(event.eventType)}</div>
               </div>
 
               <div style={styles.subtleLine}>{event.boatName}</div>

@@ -11,7 +11,7 @@ type EventItem = {
   boatId: string;
   boatName?: string;
   title: string;
-  eventType: "TRAINING" | "FLOTILLA";
+  eventType: "TRAINING" | "FLOTILLA" | "SAILING_TOUR";
   description?: string | null;
   imageUrl?: string | null;
   startDate: string;
@@ -93,7 +93,7 @@ function emptyForm() {
     id: "",
     boatId: "",
     title: "",
-    eventType: "TRAINING" as "TRAINING" | "FLOTILLA",
+    eventType: "TRAINING" as "TRAINING" | "FLOTILLA" | "SAILING_TOUR",
     description: "",
     imageUrl: "",
     startDate: "",
@@ -409,7 +409,7 @@ export default function AdminEvents() {
         <div>
           <h2 style={{ margin: 0 }}>Admin Events</h2>
           <div style={styles.subtle}>
-            Create, edit, publish, clone, and cancel flotillas and training events.
+            Create, edit, publish, clone, and cancel flotillas, sailing tours, and training events.
           </div>
         </div>
 
@@ -494,12 +494,13 @@ export default function AdminEvents() {
                   onChange={(e) =>
                     setForm((p) => ({
                       ...p,
-                      eventType: e.target.value as "TRAINING" | "FLOTILLA",
+                      eventType: e.target.value as "TRAINING" | "FLOTILLA" | "SAILING_TOUR",
                     }))
                   }
                 >
                   <option value="TRAINING">TRAINING</option>
                   <option value="FLOTILLA">FLOTILLA</option>
+                  <option value="SAILING_TOUR">Sailing Tour</option>
                 </select>
               </label>
             </div>
