@@ -192,7 +192,9 @@ export default function EventDetailPage() {
             ) : (
               <div style={styles.variationGrid}>
                 {variations.map((v) => {
-                  const soldOut = v.remainingSlots <= 0 || event.remainingParticipants <= 0;
+                  const soldOut =
+                    v.remainingSlots < 1 ||
+                    Number(event.remainingParticipants || 0) < Number(v.participantsCount || 0);
 
                   return (
                     <div key={v.id} style={styles.variationCard}>
