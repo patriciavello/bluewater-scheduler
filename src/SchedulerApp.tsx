@@ -316,7 +316,7 @@ function Modal({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 overflow-y-auto p-4 sm:flex sm:items-center sm:justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -327,100 +327,102 @@ function Modal({
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
           <motion.div
-            className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative my-4 w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl sm:my-0"
             initial={{ y: 20, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 10, opacity: 0, scale: 0.98 }}
           >
-            <div className="relative h-56 w-full">
-              <img
-                src={
-                  boat?.image_url ||
-                  "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1400&q=80"
-                }
-                alt={boat?.name || "Boat"}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <button
-                className="absolute right-3 top-3 rounded-full bg-white/90 p-2 hover:bg-white"
-                onClick={onClose}
-                type="button"
-              >
-                <X className="h-4 w-4" />
-              </button>
-              <div className="absolute bottom-4 left-5 right-5">
-                <div className="text-sm text-white/80">
-                  {(boat?.type || "Boat")}{boat?.location ? ` • ${boat.location}` : ""}
-                </div>
-                <div className="text-2xl font-semibold text-white">{boat?.name}</div>
-              </div>
-            </div>
-
-            <div className="p-5 sm:p-6 text-slate-900">
-              <div className="grid gap-4 sm:grid-cols-6">
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Max. Capacity</div>
-                  <div className="text-lg font-semibold">{boat?.capacity ?? "—"} guests</div>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Beds</div>
-                  <div className="text-lg font-semibold">{boat?.number_of_beds ?? "—"}</div>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Boat Type</div>
-                  <div className="text-sm font-semibold">{boat?.type ?? "—"}</div>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Start Day</div>
-                  <div className="text-sm font-semibold">
-                    {requestStartIso} 
-                  </div>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Duration</div>
-                  <div className="text-sm font-semibold">
-                    {durationDays} day(s)
-                  </div>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <div className="text-xs text-slate-500">Price</div>
-                  <div className="text-sm font-semibold">
-                    ${totalPrice.toFixed(2)}
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    {durationDays} × ${pricePerDay.toFixed(2)}/day
-                  </div>
-                </div>
-                
-              </div>
-
-              <div className="mt-4">
-                <div className="text-sm font-medium">Request reservation</div>
-
-                {/* ✅ Removed name/email fields — user must be logged in */}
-
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Notes (optional)"
-                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  rows={3}
+            <div className="max-h-[calc(100vh-2rem)] overflow-y-auto overscroll-contain">
+              <div className="relative h-56 w-full">
+                <img
+                  src={
+                    boat?.image_url ||
+                    "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1400&q=80"
+                  }
+                  alt={boat?.name || "Boat"}
+                  className="h-full w-full object-cover"
                 />
-
-                {submitMsg ? (
-                  <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm">{submitMsg}</div>
-                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <button
+                  className="absolute right-3 top-3 rounded-full bg-white/90 p-2 hover:bg-white"
+                  onClick={onClose}
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-4 left-5 right-5">
+                  <div className="text-sm text-white/80">
+                    {(boat?.type || "Boat")}{boat?.location ? ` • ${boat.location}` : ""}
+                  </div>
+                  <div className="text-2xl font-semibold text-white">{boat?.name}</div>
+                </div>
               </div>
 
-              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs text-slate-500">
-                Gold members can submit a reservation request directly.
-                Non-gold members will be redirected to secure card payment before the reservation is created.
-              </div>
-                <UiButton variant="primary" onClick={submitRequest} className="justify-center">
-                  {submitting ? "Submitting..." : "Request reservation"}
-                </UiButton>
+              <div className="p-5 sm:p-6 text-slate-900">
+                <div className="grid gap-4 sm:grid-cols-6">
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <div className="text-xs text-slate-500">Max. Capacity</div>
+                    <div className="text-lg font-semibold">{boat?.capacity ?? "—"} guests</div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <div className="text-xs text-slate-500">Beds</div>
+                    <div className="text-lg font-semibold">{boat?.number_of_beds ?? "—"}</div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <div className="text-xs text-slate-500">Boat Type</div>
+                    <div className="text-sm font-semibold">{boat?.type ?? "—"}</div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <div className="text-xs text-slate-500">Start Day</div>
+                    <div className="text-sm font-semibold">
+                      {requestStartIso} 
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <div className="text-xs text-slate-500">Duration</div>
+                    <div className="text-sm font-semibold">
+                      {durationDays} day(s)
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <div className="text-xs text-slate-500">Price</div>
+                    <div className="text-sm font-semibold">
+                      ${totalPrice.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {durationDays} × ${pricePerDay.toFixed(2)}/day
+                    </div>
+                  </div>
+                  
+                </div>
+
+                <div className="mt-4">
+                  <div className="text-sm font-medium">Request reservation</div>
+
+                  {/* ✅ Removed name/email fields — user must be logged in */}
+
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Notes (optional)"
+                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    rows={3}
+                  />
+
+                  {submitMsg ? (
+                    <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm">{submitMsg}</div>
+                  ) : null}
+                </div>
+
+                <div className="mt-5 flex flex-col gap-2 pb-1 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs text-slate-500">
+                  Gold members can submit a reservation request directly.
+                  Non-gold members will be redirected to secure card payment before the reservation is created.
+                </div>
+                  <UiButton variant="primary" onClick={submitRequest} className="justify-center">
+                    {submitting ? "Submitting..." : "Request reservation"}
+                  </UiButton>
+                </div>
               </div>
             </div>
           </motion.div>
