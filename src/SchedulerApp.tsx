@@ -177,11 +177,13 @@ function UiButton({
   onClick,
   variant = "ghost",
   className = "",
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "ghost" | "primary";
   className?: string;
+  disabled?: boolean;
 }) {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-600/25";
@@ -190,7 +192,12 @@ function UiButton({
       ? "bg-[#cfa35a] text-white shadow-sm hover:bg-[#b9893e]"
       : "bg-white text-[#123047] ring-1 ring-[#d8e8e8] hover:bg-[#f4fbfb]";
   return (
-    <button type="button" onClick={onClick} className={cx(base, styles, className)}>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cx(base, styles, disabled ? "cursor-not-allowed opacity-60 hover:bg-inherit" : "", className)}
+    >
       {children}
     </button>
   );
@@ -472,10 +479,42 @@ export default function SchedulerApp() {
   }, [startDateStr, scheduleStart]);
 
   const selectedEndExclusive = useMemo(() => addDays(selectedStart, durationDays), [selectedStart, durationDays]);
+  const selectedEndInclusive = useMemo(() => addDays(selectedEndExclusive, -1), [selectedEndExclusive]);
 
   const isInSelectedWindow = (d: Date) => d >= selectedStart && d < selectedEndExclusive;
 
+  const selectedBoat = useMemo(() => boats.find((b) => b.id === selectedBoatId) || null, [boats, selectedBoatId]);
   const modalBoat = useMemo(() => boats.find((b) => b.id === modalBoatId) || null, [boats, modalBoatId]);
+  const selectedBoatReservations = useMemo(
+    () => (selectedBoatId ? reservationsByBoat[selectedBoatId] || [] : []),
+    [reservationsByBoat, selectedBoatId]
+  );
+  const selectedBoatAvailability = useMemo(() => {
+    if (!selectedBoat) return null;
+
+    const eventAtStart = getEventForDate(selectedBoatReservations, requestStartIso);
+    const available = windowFits(
+      selectedBoatReservations,
+      selectedStart,
+      durationDays,
+      scheduleStart,
+      scheduleEnd
+    );
+
+    return {
+      available,
+      eventAtStart,
+      totalPrice: Number(selectedBoat.price_per_day || 0) * Math.max(1, durationDays),
+    };
+  }, [
+    durationDays,
+    requestStartIso,
+    scheduleEnd,
+    scheduleStart,
+    selectedBoat,
+    selectedBoatReservations,
+    selectedStart,
+  ]);
 
   const onClickOpenCell = (boatId: string, day: Date) => {
     const iso = toISODate(day);
@@ -699,6 +738,47 @@ export default function SchedulerApp() {
               </div>
             </div>
           </Card>
+
+          {selectedBoat && selectedBoatAvailability ? (
+            <Card className="mt-4 overflow-hidden bg-white/95 shadow-xl shadow-cyan-950/15 ring-1 ring-cyan-900/10 backdrop-blur-md">
+              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[#5b7583]">Reservation summary</div>
+                  <div className="mt-1 text-lg font-semibold text-[#123047]">{selectedBoat.name}</div>
+                  <div className="mt-1 text-sm text-[#5b7583]">
+                    {formatMonDay(selectedStart)} to {formatMonDay(selectedEndInclusive)} • {durationDays} day(s)
+                  </div>
+                  <div
+                    className={cx(
+                      "mt-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1",
+                      selectedBoatAvailability.available
+                        ? "bg-[#e9f6f7] text-[#1f6f7b] ring-[#b8dfe4]"
+                        : "bg-[#fff5f0] text-[#a0572c] ring-[#f1d1bf]"
+                    )}
+                  >
+                    {selectedBoatAvailability.available
+                      ? "Available for these dates"
+                      : selectedBoatAvailability.eventAtStart
+                      ? `${selectedBoatAvailability.eventAtStart.eventTitle || "Event"} is scheduled on the selected start date`
+                      : "Not available for these dates"}
+                  </div>
+                  <div className="mt-3 text-sm text-[#123047]">
+                    Total price: <span className="font-semibold">${selectedBoatAvailability.totalPrice.toFixed(2)}</span>
+                    {" "}for {durationDays} day(s) at ${Number(selectedBoat.price_per_day || 0).toFixed(2)}/day.
+                  </div>
+                </div>
+
+                <UiButton
+                  variant="primary"
+                  onClick={() => setModalBoatId(selectedBoat.id)}
+                  disabled={!selectedBoatAvailability.available}
+                  className="w-full justify-center sm:w-auto"
+                >
+                  Reserve
+                </UiButton>
+              </div>
+            </Card>
+          ) : null}
         </div>
       </div>
 
