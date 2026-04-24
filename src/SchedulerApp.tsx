@@ -429,7 +429,7 @@ export default function SchedulerApp() {
   const navigate = useNavigate(); 
   const [startDateStr, setStartDateStr] = useState("");
   const [durationStr, setDurationStr] = useState("");
-  const [selectedBoatIds, setSelectedBoatIds] = useState<Set<string>>(() => new Set());
+  const [selectedBoatId, setSelectedBoatId] = useState("");
   const [cursorDate, setCursorDate] = useState<Date>(() => nextSunday(new Date()));
   const [modalBoatId, setModalBoatId] = useState<string | null>(null);
 
@@ -497,16 +497,6 @@ export default function SchedulerApp() {
     navigate(`/events/${eventId}`);
   };
 
-  const toggleBoat = (id: string) => {
-    setSelectedBoatIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const clearBoats = () => setSelectedBoatIds(new Set());
   const shift = (dir: number) => setCursorDate((d) => addDays(d, dir * 14));
 
   // Fetch boats once
@@ -563,8 +553,7 @@ export default function SchedulerApp() {
 
   // Filter boats by selection + availability window
   const boatsFiltered = useMemo(() => {
-    const selected = selectedBoatIds;
-    const base = selected.size ? boats.filter((b) => selected.has(b.id)) : boats;
+    const base = selectedBoatId ? boats.filter((b) => b.id === selectedBoatId) : boats;
 
     const parsed = fromISODate(startDateStr);
     const startToCheck = parsed ? startOfDay(parsed) : null;
@@ -593,7 +582,7 @@ export default function SchedulerApp() {
     });
   }, [
     boats,
-    selectedBoatIds,
+    selectedBoatId,
     reservationsByBoat,
     scheduleStart,
     scheduleEnd,
@@ -687,35 +676,23 @@ export default function SchedulerApp() {
                 </div>
 
                 <div className="md:col-span-7">
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-[#5b7583]">My boats</div>
-                    <button type="button" onClick={clearBoats} className="text-[11px] font-semibold text-[#2f7c8a] hover:text-[#123047]">
-                      Clear
-                    </button>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {boats.map((b) => {
-                      const active = selectedBoatIds.has(b.id);
-                      return (
-                        <button
-                          key={b.id}
-                          type="button"
-                          onClick={() => toggleBoat(b.id)}
-                          className={cx(
-                            "rounded-full px-3 py-1 text-xs font-semibold ring-1 transition",
-                            active ? "bg-[#123047] text-white ring-[#123047]" : "bg-[#f7fbfb] text-[#39576a] ring-[#d8e8e8] hover:bg-white"
-                          )}
-                        >
-                          {b.name}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[#5b7583]">Boat</div>
+                  <select
+                    value={selectedBoatId}
+                    onChange={(e) => setSelectedBoatId(e.target.value)}
+                    className="mt-1 w-full rounded-lg bg-[#f7fbfb] px-3 py-2 text-sm text-[#123047] ring-1 ring-[#d8e8e8] focus:outline-none focus:ring-2 focus:ring-[#5db2bf]/35"
+                  >
+                    <option value="">All boats</option>
+                    {boats.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
 
                   <div className="mt-2 flex items-center gap-2 text-[11px] text-[#6f8590]">
                     <Search className="h-3.5 w-3.5" />
-                    Showing boats that have at least one available window ≥{" "}
+                    {selectedBoatId ? "Showing the selected boat" : "Showing all boats"} with at least one available window ≥{" "}
                     <span className="font-semibold text-[#123047]">{durationDays}</span> day(s) in this 14-day view.
                   </div>
                 </div>
