@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { withUserAuthHeaders } from "./userAuth";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -28,9 +29,9 @@ async function safeJson(res: Response) {
 }
 
 async function apiFetch(path: string, init: RequestInit = {}) {
-  const headers: Record<string, string> = {
+  const headers = withUserAuthHeaders({
     ...(init.headers as Record<string, string> | undefined),
-  };
+  });
 
   const method = (init.method || "GET").toUpperCase();
   const hasBody = init.body != null && method !== "GET" && method !== "HEAD";

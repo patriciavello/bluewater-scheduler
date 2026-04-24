@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { withUserAuthHeaders } from "../userAuth";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -111,9 +112,9 @@ export default function EventDetailPage() {
       const res = await fetch(`${API_BASE}/api/events/${id}/create-checkout-session`, {
         method: "POST",
         credentials: "include",
-        headers: {
+        headers: withUserAuthHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify({ variationId }),
       });
 

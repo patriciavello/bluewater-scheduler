@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { clearUserToken, storeUserToken, withUserAuthHeaders } from "./userAuth";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -91,9 +92,9 @@ async function safeJson(res: Response) {
 
 async function apiFetch(path: string, init: RequestInit = {}) {
   // IMPORTANT: credentials include so browser sends/receives HttpOnly cookie `session`
-  const headers: Record<string, string> = {
+  const headers = withUserAuthHeaders({
     ...(init.headers as Record<string, string> | undefined),
-  };
+  });
 
   const method = (init.method || "GET").toUpperCase();
   const hasBody = init.body != null && method !== "GET" && method !== "HEAD";
@@ -191,6 +192,7 @@ export default function UserAccount() {
       if (!res.ok || !data.ok) throw new Error(data.error || "Login failed");
 
       // Backend sets HttpOnly cookie (session). No token needed.
+      storeUserToken(data.token);
       setLoginPassword("");
       const loaded = await loadMe();
       if (!loaded) {
@@ -225,6 +227,7 @@ export default function UserAccount() {
       if (!res.ok || !data.ok) throw new Error(data.error || "Registration failed");
 
       // Backend sets HttpOnly cookie (session). No token needed.
+      storeUserToken(data.token);
       setRegPassword("");
       const loaded = await loadMe(); // ✅ auto-login into account view
       if (!loaded) {
@@ -251,6 +254,7 @@ export default function UserAccount() {
     } catch {
       // Even if logout route doesn't exist, clear UI state
     } finally {
+      clearUserToken();
       setMe(null);
       setResvs([]);
       setLoading(false);

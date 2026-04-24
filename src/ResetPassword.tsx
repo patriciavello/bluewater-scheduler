@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useLocation, Navigate } from "react-router-dom";
+import { storeUserToken, withUserAuthHeaders } from "./userAuth";
 
 const API_BASE =
   (import.meta as any).env?.VITE_API_URL?.trim?.() || "http://localhost:3001";
@@ -32,12 +33,13 @@ export default function ResetPassword() {
       const res = await fetch(`${API_BASE}/api/auth/password/reset`, {
         method: "POST",
         credentials: "include", // so auto-login cookie is saved
-        headers: { "Content-Type": "application/json" },
+        headers: withUserAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ token, email, newPassword }),
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data?.error || "Reset failed");
+      storeUserToken(data.token);
 
       setMsg("Password updated ✅ Redirecting to your account…");
       setDone(true);

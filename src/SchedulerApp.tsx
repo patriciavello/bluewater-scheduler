@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Search, Ship, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { withUserAuthHeaders } from "./userAuth";
 
 // -------------------- API --------------------
 const API_BASE =
@@ -240,6 +241,7 @@ function Modal({
       const meRes = await fetch(`${apiBase}/api/me`, {
         method: "GET",
         credentials: "include",
+        headers: withUserAuthHeaders(),
       });
 
       const meData = await meRes.json().catch(() => ({}));
@@ -265,7 +267,7 @@ function Modal({
       const res = await fetch(endpoint, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: withUserAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           boatId: boat.id,
           startDate: requestStartIso,
