@@ -111,6 +111,14 @@ async function apiFetch(path: string, init: RequestInit = {}) {
   return { res, data };
 }
 
+function isCrossOriginApi() {
+  try {
+    return new URL(API_BASE, window.location.origin).origin !== window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 export default function UserAccount() {
   const [tab, setTab] = useState<"profile" | "password" | "reservations" | "events">("profile");
   const navigate = useNavigate();
@@ -144,20 +152,27 @@ export default function UserAccount() {
 
 
   
-  async function loadMe() {
+  async function loadMe(options?: { silentUnauth?: boolean }) {
     setLoading(true);
-    setMsg("");
+    if (!options?.silentUnauth) setMsg("");
     try {
       const { res, data } = await apiFetch("/api/me", { method: "GET" });
       if (!res.ok || !data.ok) {
         // Not signed in is normal here — just show login
         setMe(null);
-        return;
+        if (!options?.silentUnauth && data?.error) {
+          setMsg(data.error);
+        }
+        return false;
       }
       setMe(data.user);
+      return true;
     } catch (e: any) {
-      setMsg(e?.message || "Failed to load profile");
+      if (!options?.silentUnauth) {
+        setMsg(e?.message || "Failed to load profile");
+      }
       setMe(null);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -177,7 +192,14 @@ export default function UserAccount() {
 
       // Backend sets HttpOnly cookie (session). No token needed.
       setLoginPassword("");
-      await loadMe();
+      const loaded = await loadMe();
+      if (!loaded) {
+        setMsg(
+          isCrossOriginApi()
+            ? "Login response succeeded, but your session was not available afterward. This usually means the browser blocked the sign-in cookie."
+            : "Login response succeeded, but your profile could not be loaded afterward."
+        );
+      }
     } catch (e: any) {
       setMsg(e?.message || "Login failed");
     } finally {
@@ -204,7 +226,14 @@ export default function UserAccount() {
 
       // Backend sets HttpOnly cookie (session). No token needed.
       setRegPassword("");
-      await loadMe(); // ✅ auto-login into account view
+      const loaded = await loadMe(); // ✅ auto-login into account view
+      if (!loaded) {
+        setMsg(
+          isCrossOriginApi()
+            ? "Account was created, but your session was not available afterward. This usually means the browser blocked the sign-in cookie."
+            : "Account was created, but your profile could not be loaded afterward."
+        );
+      }
     } catch (e: any) {
       setMsg(e?.message || "Registration failed");
     } finally {
@@ -405,7 +434,7 @@ export default function UserAccount() {
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
-    loadMe();
+    loadMe({ silentUnauth: true });
   }, []);
 
   // Not logged in view
