@@ -34,6 +34,16 @@ type Variation = {
   remainingSlots: number;
 };
 
+type MeResponse = {
+  ok?: boolean;
+  user?: {
+    id?: string;
+    email?: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+  } | null;
+};
+
 async function safeJson(res: Response) {
   const text = await res.text();
   try {
@@ -109,13 +119,32 @@ export default function EventDetailPage() {
     setMsg("");
 
     try {
+      const meRes = await fetch(`${API_BASE}/api/me`, {
+        method: "GET",
+        credentials: "include",
+        headers: withUserAuthHeaders(),
+      });
+      const meData: MeResponse = await safeJson(meRes);
+
+      if (!meRes.ok || !meData?.ok || !meData?.user?.id) {
+        throw new Error("Please sign in to book this event");
+      }
+
+      const requesterEmail = meData.user.email || "";
+      const requesterName =
+        `${meData.user.first_name || ""} ${meData.user.last_name || ""}`.trim() || "";
+
       const res = await fetch(`${API_BASE}/api/events/${id}/create-checkout-session`, {
         method: "POST",
         credentials: "include",
         headers: withUserAuthHeaders({
           "Content-Type": "application/json",
         }),
-        body: JSON.stringify({ variationId }),
+        body: JSON.stringify({
+          variationId,
+          requesterEmail,
+          requesterName,
+        }),
       });
 
       const data = await safeJson(res);
